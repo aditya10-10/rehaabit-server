@@ -4,7 +4,7 @@ exports.welcomeEmail = () => {
     
     <head>
         <meta charset="UTF-8">
-        <title>Welcome to Rahaabit!</title>
+        <title>Welcome to Rehaabit!</title>
         <style>
             body {
                 background-color: #ffffff;
@@ -68,8 +68,8 @@ exports.welcomeEmail = () => {
     <body>
         <div class="container">
             <a href="https://rahaabit.com/"><img class="logo" src="https://i.ibb.co/MGf9Ghg/Untitled-design.png"
-                    alt="StudyNotion Logo"></a>
-            <div class="message">Welcome to Rahaabit!</div>
+                    alt="Logo"></a>
+            <div class="message">Welcome to Rehaabit!</div>
             <div class="body">
                 <p>Dear Sir/Madam,</p>
                 <p>We're thrilled to announce that something incredible is on the horizon! Our team at Rehaabit has been working tirelessly behind the scenes to bring you something truly special, and we can't wait to share it with you.</p>
