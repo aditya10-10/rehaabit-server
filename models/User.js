@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Address = require("./Address");
 
 const userSchema = new mongoose.Schema({
   contactNumber: {
@@ -25,7 +24,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
   },
-
   image: {
     type: String,
     required: true,
