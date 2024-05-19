@@ -50,8 +50,78 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
-// Verify OTP and create user
+// Signup: Verify OTP and create a new user
 exports.signup = async (req, res) => {
+  try {
+    let { contactNumber, otp, accountType } = req.body;
+
+    // Convert contactNumber to string if it's a number
+    if (typeof contactNumber === "number") {
+      contactNumber = contactNumber.toString();
+    }
+
+    // Parse and validate phone number
+    const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
+    if (!phoneUtil.isValidNumber(phoneNumber)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid phone number." });
+    }
+
+    // Convert phone number to E.164 format
+    const formattedPhoneNumber = phoneUtil.format(phoneNumber, PNF.E164);
+    contactNumber = formattedPhoneNumber;
+
+    // Find the most recent OTP for the phone number
+    const latestOTP = await OTP.findOne({ contactNumber }).sort({
+      createdAt: -1,
+    });
+
+    if (!latestOTP || String(latestOTP.otp) !== String(otp)) {
+      return res.status(400).json({ success: false, message: "Invalid OTP." });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ contactNumber });
+    if (!user) {
+      // Create the Additional Profile For User
+      const profileDetails = await Profile.create({
+        firstName: null,
+        lastName: null,
+        email: null,
+        contactNumber: contactNumber,
+      });
+
+      user = await User.create({
+        contactNumber,
+        accountType: accountType,
+        additionalDetails: profileDetails._id,
+        image: "",
+      });
+
+      // Delete the OTP after successful verification
+      await OTP.deleteOne({ _id: latestOTP._id });
+
+      return res.status(200).json({
+        success: true,
+        user,
+        message: "User registered successfully",
+      });
+    }
+
+    res
+      .status(400)
+      .json({ success: false, message: "User already exists. Please login." });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to register user." });
+  }
+};
+
+// Login: Verify OTP and create a session for the existing user
+exports.login = async (req, res) => {
   try {
     let { contactNumber, otp } = req.body;
 
@@ -70,89 +140,53 @@ exports.signup = async (req, res) => {
 
     // Convert phone number to E.164 format
     const formattedPhoneNumber = phoneUtil.format(phoneNumber, PNF.E164);
-
     contactNumber = formattedPhoneNumber;
-
-    // Check if user already exists
-    let user = await User.findOne({ contactNumber });
-    console.log("User already exists", user);
 
     // Find the most recent OTP for the phone number
     const latestOTP = await OTP.findOne({ contactNumber }).sort({
       createdAt: -1,
     });
 
-    console.log("Latest OTP", latestOTP);
     if (!latestOTP || String(latestOTP.otp) !== String(otp)) {
       return res.status(400).json({ success: false, message: "Invalid OTP." });
     }
 
+    // Check if user exists
+    let user = await User.findOne({ contactNumber });
     if (!user) {
-      // Create the Additional Profile For User
-      const profileDetails = await Profile.create({
-        firstName: null,
-        lastName: null,
-        email: null,
-        contactNumber: contactNumber,
-      });
-
-      console.log("Profile Details", profileDetails);
-      user = await User.create({
-        contactNumber,
-        accountType: "User",
-        additionalDetails: profileDetails._id,
-        image: "",
-      });
-
-      console.log("New User", user);
-      res.status(200).json({
-        success: true,
-        user,
-        message: "User registered successfully",
-      });
-    } else {
-      console.log(
-        "Existing User",
-        user.contactNumber,
-        user._id,
-        user.accountType
-      );
-
-      // Debugging JWT_SECRET
-      console.log("JWT_SECRET", process.env.JWT_SECRET);
-
-      // Generate JWT token for existing user
-      const token = jwt.sign(
-        { contactNumber: user.contactNumber, id: user._id, role: user.role },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "24h",
-        }
-      );
-
-      // Set cookie for token and return success response
-      const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-      };
-      res.cookie("token", token, options).status(200).json({
-        success: true,
-        token,
-        user,
-        message: "User login successful",
+      return res.status(400).json({
+        success: false,
+        message: "User not found. Please sign up first.",
       });
     }
 
+    // Generate JWT token for existing user
+    const token = jwt.sign(
+      { contactNumber: user.contactNumber, id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "24h",
+      }
+    );
+
+    // Set cookie for token and return success response
+    const options = {
+      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    };
+    res.cookie("token", token, options);
+
     // Delete the OTP after successful verification
     await OTP.deleteOne({ _id: latestOTP._id });
+
+    return res.status(200).json({
+      success: true,
+      token,
+      user,
+      message: "User login successful",
+    });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to register user." });
+    res.status(500).json({ success: false, message: "Failed to login user." });
   }
-};
-// Function to generate a random 6-digit OTP
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
 };
