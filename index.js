@@ -4,6 +4,7 @@ const app = express();
 const userRoutes = require("./routes/User");
 const mailRoutes = require("./routes/welcomeMail");
 const serviceRoutes = require("./routes/Services");
+const contactRoutes = require("./routes/Contact");
 
 const database = require("./config/database");
 const cookieParser = require("cookie-parser");
@@ -28,6 +29,7 @@ app.use(
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", mailRoutes);
 app.use("/api/v1", serviceRoutes);
+app.use("/api/v1", contactRoutes);
 
 // default route
 app.get("/", (req, res) => {
