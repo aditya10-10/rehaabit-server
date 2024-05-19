@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 // Import the required controllers and middleware functions
-const { signup, sendOTP } = require("../controllers/AuthController");
+const { login, signup, sendOTP } = require("../controllers/AuthController");
 
 const { auth } = require("../middlewares/auth");
 
@@ -13,7 +13,7 @@ const { auth } = require("../middlewares/auth");
 //                                      Authentication routes
 // ********************************************************************************************************
 
-router.post("/login", signup);
+router.post("/login", login);
 
 // Route for user signup
 router.post("/signup", signup);

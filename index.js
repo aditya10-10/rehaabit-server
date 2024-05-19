@@ -2,10 +2,12 @@ const express = require("express");
 const app = express();
 
 const userRoutes = require("./routes/User");
+const mailRoutes = require("./routes/welcomeMail");
+const serviceRoutes = require("./routes/Services");
+
 const database = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const mailRoutes = require("./routes/welcomeMail");
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 
@@ -25,6 +27,7 @@ app.use(
 // routes
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", mailRoutes);
+app.use("/api/v1", serviceRoutes);
 
 // default route
 app.get("/", (req, res) => {
