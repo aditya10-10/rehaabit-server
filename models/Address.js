@@ -23,7 +23,6 @@ const addressSchema = new mongoose.Schema({
   },
   locality: {
     type: String,
-    required: true,
     trim: true,
   },
   address: {
