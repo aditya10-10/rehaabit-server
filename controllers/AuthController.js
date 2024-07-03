@@ -5,10 +5,18 @@ const Profile = require("../models/Profile");
 require("dotenv").config();
 
 const otplib = require("otplib");
-
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
+
+// Utility function to parse and validate phone number
+const validatePhoneNumber = (contactNumber) => {
+  const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
+  if (!phoneUtil.isValidNumber(phoneNumber)) {
+    throw new Error("Invalid phone number.");
+  }
+  return phoneUtil.format(phoneNumber, PNF.E164);
+};
 
 // Send OTP to user's phone number
 exports.sendOTP = async (req, res) => {
@@ -21,17 +29,7 @@ exports.sendOTP = async (req, res) => {
     }
 
     // Parse and validate phone number
-    const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
-    if (!phoneUtil.isValidNumber(phoneNumber)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid phone number." });
-    }
-
-    // Convert phone number to E.164 format
-    const formattedPhoneNumber = phoneUtil.format(phoneNumber, PNF.E164);
-
-    contactNumber = formattedPhoneNumber;
+    const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
     // Generate OTP
     const otp = otplib.authenticator.generate(
@@ -39,14 +37,18 @@ exports.sendOTP = async (req, res) => {
     );
 
     // Save OTP to the database
-    const otpInstance = new OTP({ contactNumber, otp });
+    const otpInstance = new OTP({ contactNumber: formattedPhoneNumber, otp });
     await otpInstance.save();
+
     res
       .status(200)
-      .json({ success: true, message: "OTP sent successfully.", otp: otp });
+      .json({ success: true, message: "OTP sent successfully.", otp });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to send OTP." });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to send OTP.",
+    });
   }
 };
 
@@ -61,19 +63,12 @@ exports.signup = async (req, res) => {
     }
 
     // Parse and validate phone number
-    const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
-    if (!phoneUtil.isValidNumber(phoneNumber)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid phone number." });
-    }
-
-    // Convert phone number to E.164 format
-    const formattedPhoneNumber = phoneUtil.format(phoneNumber, PNF.E164);
-    contactNumber = formattedPhoneNumber;
+    const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
     // Find the most recent OTP for the phone number
-    const latestOTP = await OTP.findOne({ contactNumber }).sort({
+    const latestOTP = await OTP.findOne({
+      contactNumber: formattedPhoneNumber,
+    }).sort({
       createdAt: -1,
     });
 
@@ -82,19 +77,19 @@ exports.signup = async (req, res) => {
     }
 
     // Check if user already exists
-    let user = await User.findOne({ contactNumber });
+    let user = await User.findOne({ contactNumber: formattedPhoneNumber });
     if (!user) {
       // Create the Additional Profile For User
       const profileDetails = await Profile.create({
         firstName: null,
         lastName: null,
         email: null,
-        contactNumber: contactNumber,
+        contactNumber: formattedPhoneNumber,
       });
 
       user = await User.create({
-        contactNumber,
-        accountType: accountType,
+        contactNumber: formattedPhoneNumber,
+        accountType,
         additionalDetails: profileDetails._id,
         image: "",
       });
@@ -114,9 +109,10 @@ exports.signup = async (req, res) => {
       .json({ success: false, message: "User already exists. Please login." });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to register user." });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to register user.",
+    });
   }
 };
 
@@ -131,19 +127,12 @@ exports.login = async (req, res) => {
     }
 
     // Parse and validate phone number
-    const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
-    if (!phoneUtil.isValidNumber(phoneNumber)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid phone number." });
-    }
-
-    // Convert phone number to E.164 format
-    const formattedPhoneNumber = phoneUtil.format(phoneNumber, PNF.E164);
-    contactNumber = formattedPhoneNumber;
+    const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
     // Find the most recent OTP for the phone number
-    const latestOTP = await OTP.findOne({ contactNumber }).sort({
+    const latestOTP = await OTP.findOne({
+      contactNumber: formattedPhoneNumber,
+    }).sort({
       createdAt: -1,
     });
 
@@ -152,7 +141,7 @@ exports.login = async (req, res) => {
     }
 
     // Check if user exists
-    let user = await User.findOne({ contactNumber });
+    let user = await User.findOne({ contactNumber: formattedPhoneNumber });
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -187,6 +176,9 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to login user." });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to login user.",
+    });
   }
 };
