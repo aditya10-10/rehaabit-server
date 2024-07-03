@@ -69,7 +69,7 @@ exports.updateSubCategory = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: SubCategory1,
+      // message: SubCategory1,
       data: Category1,
     });
   } catch (error) {
