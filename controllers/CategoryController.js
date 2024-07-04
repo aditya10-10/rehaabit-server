@@ -1,4 +1,5 @@
 const Category = require("../models/Category");
+const SubCategory = require("../models/SubCategory");
 
 // Create a new category
 exports.createCategory = async (req, res) => {
@@ -53,6 +54,86 @@ exports.showAllCategories = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching categories:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Update a category
+exports.updateCategory = async (req, res) => {
+  try {
+    const { categoryId, name } = req.body;
+
+    // Validate input
+    if (!categoryId || !name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Category ID and name are required" });
+    }
+
+    // Update the category
+    const category = await Category.findByIdAndUpdate(
+      categoryId,
+      { name },
+      { new: true }
+    );
+
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    console.log("Category Updated:", category);
+    return res.status(200).json({
+      success: true,
+      message: "Category updated successfully",
+      data: category,
+    });
+  } catch (error) {
+    console.error("Error updating category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Delete a category
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.body;
+
+    // Validate input
+    if (!categoryId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Category ID is required" });
+    }
+
+    // Find the category
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    // Delete subcategories associated with the category
+    await SubCategory.deleteMany({ _id: { $in: category.subCategory } });
+
+    // Delete the category
+    await Category.findByIdAndDelete(categoryId);
+
+    console.log("Category Deleted:", categoryId);
+    return res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting category:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

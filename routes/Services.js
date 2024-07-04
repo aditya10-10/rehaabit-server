@@ -16,6 +16,8 @@ const {
 const {
   showAllCategories,
   createCategory,
+  updateCategory,
+  deleteCategory,
 } = require("../controllers/CategoryController");
 
 // Sub Category Controllers Import
@@ -66,6 +68,8 @@ const { auth, isPartner, isUser, isAdmin } = require("../middlewares/auth");
 // TODO: Put IsAdmin Middleware here
 router.post("/createCategory", auth, isAdmin, createCategory);
 router.get("/showAllCategories", showAllCategories);
+router.post("/updateCategory", auth, isAdmin, updateCategory);
+router.post("/deleteCategory", auth, isAdmin, deleteCategory);
 // router.post("/getCategoryPageDetails", categoryPageDetails);
 
 //Add a Section to a Course
