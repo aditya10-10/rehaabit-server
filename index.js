@@ -5,6 +5,7 @@ const userRoutes = require("./routes/User");
 const mailRoutes = require("./routes/welcomeMail");
 const serviceRoutes = require("./routes/Services");
 const contactRoutes = require("./routes/Contact");
+const profileRoutes = require("./routes/Profile");
 
 const database = require("./config/database");
 const cookieParser = require("cookie-parser");
@@ -28,6 +29,7 @@ app.use(
 // routes
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", mailRoutes);
+app.use("/api/v1", profileRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", contactRoutes);
 
