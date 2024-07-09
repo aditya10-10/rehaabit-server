@@ -1,5 +1,11 @@
 const express = require("express");
-const app = express();
+const fileUpload = require("express-fileupload");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+
+// Load environment variables
+dotenv.config();
 
 const userRoutes = require("./routes/User");
 const mailRoutes = require("./routes/welcomeMail");
@@ -8,15 +14,15 @@ const contactRoutes = require("./routes/Contact");
 const profileRoutes = require("./routes/Profile");
 
 const database = require("./config/database");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-require("dotenv").config();
+const { cloudinaryConnect } = require("./config/cloudinary");
+
+const app = express();
 const PORT = process.env.PORT || 4000;
 
-// database connect
+// Connect to the database
 database.connect();
 
-//middlewares
+// Apply middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -25,15 +31,22 @@ app.use(
     credentials: true,
   })
 );
-
-// routes
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp",
+  })
+);
+//cloudinary connection
+cloudinaryConnect();
+// Routes
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", mailRoutes);
 app.use("/api/v1", profileRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", contactRoutes);
 
-// default route
+// Default route
 app.get("/", (req, res) => {
   return res.json({
     success: true,
@@ -41,7 +54,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
