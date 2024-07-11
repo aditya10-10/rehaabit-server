@@ -14,10 +14,16 @@ const servicesSchema = new mongoose.Schema({
   timeToComplete: {
     type: String,
   },
-  serviceContent: [
+  includes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "IncludeExclude",
+      ref: "Include",
+    },
+  ],
+  excludes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Exclude",
     },
   ],
   ratingAndReviews: [

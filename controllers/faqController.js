@@ -1,27 +1,41 @@
 // controllers/faqController.js
 const FAQ = require("../models/FAQ");
+const Service = require("../models/Service"); // Assuming there is a Service model related to FAQs
 
-// Create a new FAQ
+// CREATE a new FAQ
 exports.createFAQ = async (req, res) => {
   try {
-    const { question, answer, category } = req.body;
+    const { question, answer, serviceId } = req.body;
 
-    const faq = new FAQ({
-      question,
-      answer,
-      category,
-    });
+    if (!question || !answer || !serviceId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required properties",
+      });
+    }
 
-    await faq.save();
+    const newFAQ = await FAQ.create({ question, answer });
 
-    return res.status(201).json({
+    const updatedService = await Service.findByIdAndUpdate(
+      serviceId,
+      {
+        $push: {
+          faqs: newFAQ._id,
+        },
+      },
+      { new: true }
+    )
+      .populate("faqs")
+      .exec();
+
+    res.status(200).json({
       success: true,
       message: "FAQ created successfully",
-      faq,
+      updatedService,
     });
   } catch (error) {
     console.error("Error creating FAQ:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
@@ -29,17 +43,17 @@ exports.createFAQ = async (req, res) => {
   }
 };
 
-// Get all FAQs
+// GET all FAQs
 exports.getAllFAQs = async (req, res) => {
   try {
     const faqs = await FAQ.find();
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       faqs,
     });
   } catch (error) {
     console.error("Error getting FAQs:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
@@ -47,15 +61,15 @@ exports.getAllFAQs = async (req, res) => {
   }
 };
 
-// Update an FAQ
+// UPDATE an FAQ
 exports.updateFAQ = async (req, res) => {
   try {
     const { id } = req.params;
-    const { question, answer, category } = req.body;
+    const { question, answer, serviceId } = req.body;
 
     const faq = await FAQ.findByIdAndUpdate(
       id,
-      { question, answer, category },
+      { question, answer },
       { new: true }
     );
 
@@ -66,14 +80,16 @@ exports.updateFAQ = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    const service = await Service.findById(serviceId).populate("faqs").exec();
+
+    res.status(200).json({
       success: true,
       message: "FAQ updated successfully",
-      faq,
+      data: service,
     });
   } catch (error) {
     console.error("Error updating FAQ:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
@@ -81,12 +97,18 @@ exports.updateFAQ = async (req, res) => {
   }
 };
 
-// Delete an FAQ
+// DELETE an FAQ
 exports.deleteFAQ = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id, serviceId } = req.body;
 
-    const faq = await FAQ.findByIdAndDelete(id);
+    await Service.findByIdAndUpdate(serviceId, {
+      $pull: {
+        faqs: id,
+      },
+    });
+
+    const faq = await FAQ.findById(id);
 
     if (!faq) {
       return res.status(404).json({
@@ -95,13 +117,18 @@ exports.deleteFAQ = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    await FAQ.findByIdAndDelete(id);
+
+    const service = await Service.findById(serviceId).populate("faqs").exec();
+
+    res.status(200).json({
       success: true,
       message: "FAQ deleted successfully",
+      data: service,
     });
   } catch (error) {
     console.error("Error deleting FAQ:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,

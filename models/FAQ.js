@@ -13,11 +13,6 @@ const faqSchema = new mongoose.Schema(
       required: [true, "Answer is required"],
       trim: true,
     },
-    category: {
-      type: String,
-      required: [true, "Category is required"],
-      trim: true,
-    },
   },
   { timestamps: true }
 );
