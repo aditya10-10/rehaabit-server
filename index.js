@@ -12,7 +12,9 @@ const mailRoutes = require("./routes/welcomeMail");
 const serviceRoutes = require("./routes/Services");
 const contactRoutes = require("./routes/Contact");
 const profileRoutes = require("./routes/Profile");
+const faqRoutes = require("./routes/Faq");
 
+// Connect to Cloudinary
 const database = require("./config/database");
 const { cloudinaryConnect } = require("./config/cloudinary");
 
@@ -45,6 +47,7 @@ app.use("/api/v1", mailRoutes);
 app.use("/api/v1", profileRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", contactRoutes);
+app.use("/api/v1/", faqRoutes);
 
 // Default route
 app.get("/", (req, res) => {
