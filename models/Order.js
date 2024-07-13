@@ -2,11 +2,16 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const orderSchema = Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   service: [
     {
       serviceId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: "Service",
       },
       qty: {
         type: Number,
@@ -14,7 +19,6 @@ const orderSchema = Schema({
       },
       price: {
         type: Number,
-        default: 0,
       },
       serviceName: {
         type: String,
@@ -29,17 +33,14 @@ const orderSchema = Schema({
     type: String,
     required: true,
   },
+  status: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "OrderStatus",
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-  },
-  status: {
-    type: String,
-    default: "pending",
-  },
-  Delivered: {
-    type: Boolean,
-    default: false,
   },
 });
 

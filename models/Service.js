@@ -14,6 +14,22 @@ const servicesSchema = new mongoose.Schema({
   timeToComplete: {
     type: String,
   },
+  price: {
+    type: Number,
+    required: true,
+  },
+  thumbnail: {
+    type: String,
+  },
+  warranty: {
+    type: String,
+  },
+  howDoesItWorks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "HowDoesItWorks",
+    },
+  ],
   includes: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -26,33 +42,23 @@ const servicesSchema = new mongoose.Schema({
       ref: "Exclude",
     },
   ],
-  ratingAndReviews: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "RatingAndReview",
-    },
-  ],
-  price: {
-    type: Number,
-    required: true,
-  },
-  thumbnail: {
-    type: String,
-  },
-  warranty: {
-    type: String,
-  },
-  status: {
-    type: String,
-    enum: ["pending", "processing", "shipped", "delivered"],
-    default: "pending",
-  },
   faq: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Faq",
     },
   ],
+  ratingAndReviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RatingAndReview",
+    },
+  ],
+  status: {
+    type: String,
+    enum: ["Draft", "Published"],
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,
