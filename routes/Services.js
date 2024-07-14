@@ -7,7 +7,7 @@ const router = express.Router();
 // Course Controllers Import
 const {
   createService,
-  updateService,
+  editService,
   // deleteService,
   // getAllServices,
 } = require("../controllers/ServicesController");
@@ -31,7 +31,37 @@ const {
   getSubCategoriesByCategory,
 } = require("../controllers/SubCategoryController");
 
-// // Rating Controllers Import
+const {
+  createInclude,
+  updateInclude,
+  deleteInclude,
+  // getAllIncludes,
+} = require("../controllers/includeController");
+
+// Exclude Controllers Import
+const {
+  createExclude,
+  updateExclude,
+  deleteExclude,
+  // getAllExcludes,
+} = require("../controllers/excludeController");
+
+// FAQ Controllers Import
+const {
+  createFAQ,
+  getAllFAQs,
+  updateFAQ,
+  deleteFAQ,
+} = require("../controllers/faqController");
+
+// HowDoesItWorks Controllers Import
+const {
+  createHowDoesItWorks,
+  updateHowDoesItWorks,
+  deleteHowDoesItWorks,
+} = require("../controllers/HowDoesItWorks");
+
+// Rating Controllers Import
 // const {
 //   createRating,
 //   getAverageRating,
@@ -77,11 +107,33 @@ router.get(
   getSubCategoriesByCategory
 );
 
+// ********************************************************************************************************
+//                                      Service routes
+// ********************************************************************************************************
+
 // Courses can Only be Created by Instructors
 router.post("/createService", auth, isAdmin, createService);
 
 // Edit Sub Section
-router.post("/updateService", auth, isAdmin, updateService);
+router.put("/editService", auth, isAdmin, editService);
+
+router.post("/createInclude", auth, isAdmin, createInclude);
+router.put("/updateInclude", auth, isAdmin, updateInclude);
+router.delete("/deleteInclude", auth, isAdmin, deleteInclude);
+// router.get("/getAllIncludes", auth, isAdmin, getAllIncludes);
+
+router.post("/createExclude", auth, isAdmin, createExclude);
+router.put("/updateExclude", auth, isAdmin, updateExclude);
+router.delete("/deleteExclude", auth, isAdmin, deleteExclude);
+
+router.post("/createFAQ", auth, isAdmin, createFAQ);
+router.get("/getAllFAQs", auth, isAdmin, getAllFAQs);
+router.put("/updateFAQ", auth, isAdmin, updateFAQ);
+router.delete("/deleteFAQ", auth, isAdmin, deleteFAQ);
+
+router.post("/createHowDoesItWorks", auth, isAdmin, createHowDoesItWorks);
+router.put("/updateHowDoesItWorks", auth, isAdmin, updateHowDoesItWorks);
+router.delete("/deleteHowDoesItWorks", auth, isAdmin, deleteHowDoesItWorks);
 
 // ********************************************************************************************************
 //                                      Rating and Review

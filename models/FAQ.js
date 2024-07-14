@@ -21,4 +21,4 @@ const faqSchema = new mongoose.Schema(
 faqSchema.index({ question: 1 });
 faqSchema.index({ category: 1 });
 
-module.exports = mongoose.model("FAQ", faqSchema);
+module.exports = mongoose.model("Faq", faqSchema);

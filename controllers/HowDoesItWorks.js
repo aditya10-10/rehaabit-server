@@ -1,38 +1,38 @@
-// controllers/includeController.js
-const Include = require("../models/Include");
+// controllers/HowDoesItWorksController.js
+const HowDoesItWorks = require("../models/HowDoesItWorks");
 const Service = require("../models/Service");
 
-// CREATE a new Include
-exports.createInclude = async (req, res) => {
+// CREATE a new HowDoesItWorks
+exports.createHowDoesItWorks = async (req, res) => {
   try {
-    const { content, serviceId } = req.body;
+    const { point, serviceId } = req.body;
 
-    if (!content || !serviceId) {
+    if (!point || !serviceId) {
       return res.status(400).json({
         success: false,
         message: "Missing required properties",
       });
     }
 
-    const newInclude = await Include.create({ content });
+    const newHowDoesItWorks = await HowDoesItWorks.create({ point });
 
     const updatedService = await Service.findByIdAndUpdate(
       serviceId,
       {
-        $push: { includes: newInclude._id },
+        $push: { howDoesItWorks: newHowDoesItWorks._id },
       },
       { new: true }
     )
-      .populate("includes")
+      .populate("howDoesItWorks")
       .exec();
 
     res.status(200).json({
       success: true,
-      message: "Include created successfully",
+      message: "HowDoesItWorks created successfully",
       updatedService,
     });
   } catch (error) {
-    console.error("Error creating Include:", error);
+    console.error("Error creating HowDoesItWorks:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -41,35 +41,35 @@ exports.createInclude = async (req, res) => {
   }
 };
 
-// UPDATE an Include
-exports.updateInclude = async (req, res) => {
+// UPDATE an HowDoesItWorks
+exports.updateHowDoesItWorks = async (req, res) => {
   try {
-    const { content, serviceId, id } = req.body;
+    const { point, serviceId, id } = req.body;
 
-    const include = await Include.findByIdAndUpdate(
+    const HowDoesItWorksDetail = await HowDoesItWorks.findByIdAndUpdate(
       id,
-      { content },
+      { point },
       { new: true }
     );
 
-    if (!include) {
+    if (!HowDoesItWorksDetail) {
       return res.status(404).json({
         success: false,
-        message: "Include not found",
+        message: "HowDoesItWorks not found",
       });
     }
 
     const service = await Service.findById(serviceId)
-      .populate("includes")
+      .populate("howDoesItWorks")
       .exec();
 
     res.status(200).json({
       success: true,
-      message: "Include updated successfully",
+      message: "HowDoesItWorks updated successfully",
       data: service,
     });
   } catch (error) {
-    console.error("Error updating Include:", error);
+    console.error("Error updating HowDoesItWorks:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -78,37 +78,37 @@ exports.updateInclude = async (req, res) => {
   }
 };
 
-// DELETE an Include
-exports.deleteInclude = async (req, res) => {
+// DELETE an HowDoesItWorks
+exports.deleteHowDoesItWorks = async (req, res) => {
   try {
     const { id, serviceId } = req.body;
 
     await Service.findByIdAndUpdate(serviceId, {
-      $pull: { includes: id },
+      $pull: { howDoesItWorks: id },
     });
 
-    const include = await Include.findById(id);
+    const HowDoesItWorksDetail = await HowDoesItWorks.findById(id);
 
-    if (!include) {
+    if (!HowDoesItWorksDetail) {
       return res.status(404).json({
         success: false,
-        message: "Include not found",
+        message: "HowDoesItWorks not found",
       });
     }
 
-    await Include.findByIdAndDelete(id);
+    await HowDoesItWorks.findByIdAndDelete(id);
 
     const service = await Service.findById(serviceId)
-      .populate("includes")
+      .populate("howDoesItWorks")
       .exec();
 
     res.status(200).json({
       success: true,
-      message: "Include deleted successfully",
+      message: "HowDoesItWorks deleted successfully",
       data: service,
     });
   } catch (error) {
-    console.error("Error deleting Include:", error);
+    console.error("Error deleting HowDoesItWorks:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

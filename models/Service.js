@@ -42,7 +42,7 @@ const servicesSchema = new mongoose.Schema({
       ref: "Exclude",
     },
   ],
-  faq: [
+  faqs: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Faq",

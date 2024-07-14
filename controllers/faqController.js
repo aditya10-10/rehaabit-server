@@ -64,8 +64,7 @@ exports.getAllFAQs = async (req, res) => {
 // UPDATE an FAQ
 exports.updateFAQ = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { question, answer, serviceId } = req.body;
+    const { question, answer, serviceId, id } = req.body;
 
     const faq = await FAQ.findByIdAndUpdate(
       id,

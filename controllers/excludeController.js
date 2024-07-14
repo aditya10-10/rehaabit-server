@@ -44,8 +44,7 @@ exports.createExclude = async (req, res) => {
 // UPDATE an Exclude
 exports.updateExclude = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { content, serviceId } = req.body;
+    const { content, serviceId, id } = req.body;
 
     const exclude = await Exclude.findByIdAndUpdate(
       id,

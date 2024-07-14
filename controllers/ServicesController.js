@@ -3,44 +3,59 @@ const Service = require("../models/Service");
 // const RatingAndReview = require("../models/RatingAndReview");
 // const Faq = require("../models/Faq");
 const SubCategory = require("../models/SubCategory");
+const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
 // CREATE a new Service
 exports.createService = async (req, res) => {
   try {
-    const {
+    let {
+      categoryId,
+      subCategoryId,
       serviceName,
       serviceDescription,
       timeToComplete,
-      serviceContent,
-      ratingAndReviews,
       price,
-      thumbnail,
       warranty,
       status,
-      faq,
-      subCategoryId,
     } = req.body;
 
+    const thumbnail = req.files.thumbnail;
+
     // Validate the input
-    if (!serviceName || !serviceDescription || !price || !subCategoryId) {
+    if (
+      !serviceName ||
+      !serviceDescription ||
+      !price ||
+      !subCategoryId ||
+      !categoryId ||
+      !thumbnail
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required properties: serviceName or price",
+        message: "Missing required ",
       });
     }
+
+    if (!status || status === undefined) {
+      status = "Draft";
+    }
+
+    const thumbnailImage = await uploadImageToCloudinary(
+      thumbnail,
+      process.env.FOLDER_NAME
+    );
+
+    console.log(thumbnailImage);
 
     // Create a new Service
     const newService = await Service.create({
       serviceName,
       serviceDescription,
       timeToComplete,
-      serviceContent,
-      ratingAndReviews,
       price,
-      thumbnail,
       warranty,
       status,
-      faq,
+      thumbnail: thumbnailImage.secure_url,
     });
 
     // Add the new SubCategory to the Category's content array
@@ -74,50 +89,54 @@ exports.createService = async (req, res) => {
 };
 
 // UPDATE a Service
-exports.updateService = async (req, res) => {
+exports.editService = async (req, res) => {
   try {
     const {
       serviceId,
       serviceName,
       serviceDescription,
       timeToComplete,
-      serviceContent,
-      ratingAndReviews,
       price,
-      thumbnail,
       warranty,
       status,
-      faq,
     } = req.body;
+
+    const thumbnail = req.files ? req.files.thumbnail : null;
 
     // Validate the input
     if (!serviceId) {
       return res.status(400).json({
         success: false,
-        message: "Missing required property: serviceId",
+        message: "Service ID are required",
       });
     }
 
-    // Update the Service
-    const updatedService = await Service.findByIdAndUpdate(
-      serviceId,
-      {
-        serviceName,
-        serviceDescription,
-        timeToComplete,
-        serviceContent,
-        ratingAndReviews,
-        price,
+    let updates = {
+      serviceName,
+      serviceDescription,
+      timeToComplete,
+      price,
+      warranty,
+      status,
+    };
+
+    if (thumbnail) {
+      const thumbnailImage = await uploadImageToCloudinary(
         thumbnail,
-        warranty,
-        status,
-        faq,
-      },
-      { new: true }
+        process.env.FOLDER_NAME
+      );
+      updates.thumbnail = thumbnailImage.secure_url;
+    }
+
+    // Remove undefined fields from updates
+    updates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v != null)
     );
-    //   .populate("serviceContent")
-    //   .populate("ratingAndReviews")
-    //   .populate("faq");
+
+    // Update the service
+    const updatedService = await Service.findByIdAndUpdate(serviceId, updates, {
+      new: true,
+    });
 
     if (!updatedService) {
       return res.status(404).json({
@@ -132,6 +151,7 @@ exports.updateService = async (req, res) => {
       service: updatedService,
     });
   } catch (error) {
+    console.error("Error updating service:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
