@@ -288,6 +288,7 @@ exports.showAllSubCategories = async (req, res) => {
 };
 
 // Get all subcategories within a specific category
+// ! This function is not working as expected because params and body request or get or post
 exports.getSubCategoriesByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
