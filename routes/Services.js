@@ -16,14 +16,19 @@ const {
 const {
   showAllCategories,
   createCategory,
-  updateCategory,
+  updateCategoryName,
+  updateCategoryIcon,
   deleteCategory,
 } = require("../controllers/CategoryController");
 
 // Sub Category Controllers Import
 const {
   createSubCategory,
-  updateSubCategory,
+  updateSubCategoryName,
+  updateSubCategoryIcon,
+  deleteSubCategory,
+  showAllSubCategories,
+  getSubCategoriesByCategory,
 } = require("../controllers/SubCategoryController");
 
 // // Rating Controllers Import
@@ -39,45 +44,38 @@ const {
 const { auth, isPartner, isUser, isAdmin } = require("../middlewares/auth");
 
 // ********************************************************************************************************
-//                                      Course routes
-// ********************************************************************************************************
-
-// // Delete Sub Section
-// router.post("/deleteSubSection", auth, isInstructor, deleteSubSection);
-// // Add a Sub Section to a Section
-// router.post("/addSubSection", auth, isInstructor, createSubSection);
-// // Get all Registered Courses
-// router.get("/getAllCourses", getAllCourses);
-// // Get Details for a Specific Courses
-// router.post("/getCourseDetails", getCourseDetails);
-// // Get Details for a Specific Courses
-// router.post("/getFullCourseDetails", auth, getFullCourseDetails);
-// // Edit Course routes
-// router.post("/editCourse", auth, isInstructor, editCourse);
-// // Get all Courses Under a Specific Instructor
-// router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
-// // Delete a Course
-// router.delete("/deleteCourse", deleteCourse);
-
-// router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress);
-
-// ********************************************************************************************************
 //                                      Category routes (Only by Admin)
 // ********************************************************************************************************
 // Category can Only be Created by Admin
 // TODO: Put IsAdmin Middleware here
 router.post("/createCategory", auth, isAdmin, createCategory);
 router.get("/showAllCategories", showAllCategories);
-router.post("/updateCategory", auth, isAdmin, updateCategory);
-router.post("/deleteCategory", auth, isAdmin, deleteCategory);
+router.put("/updateCategoryName", auth, isAdmin, updateCategoryName);
+router.put("/updateCategoryIcon", auth, isAdmin, updateCategoryIcon);
+router.delete("/deleteCategory", auth, isAdmin, deleteCategory);
 // router.post("/getCategoryPageDetails", categoryPageDetails);
 
-//Add a Section to a Course
+// ********************************************************************************************************
+//                                      Sub-Category routes (Only by Admin)
+// ********************************************************************************************************
+// Sub - Category can Only be Created by Admin
+
+//Add a subcategory to a category
 router.post("/addSubCategory", auth, isAdmin, createSubCategory);
-// Update a Section
-router.post("/updateSubCategory", auth, isAdmin, updateSubCategory);
-// Delete a Section
-// router.post("/deleteSection", auth, isInstructor, deleteSection);
+// Update a subcategory
+router.put("/updateSubCategoryName", auth, isAdmin, updateSubCategoryName);
+router.put("/updateSubCategoryIcon", auth, isAdmin, updateSubCategoryIcon);
+
+// Delete a subcategory
+router.delete("/deleteSubCategory", auth, isAdmin, deleteSubCategory);
+// show all subcategories
+router.get("/showAllSubCategories", auth, isAdmin, showAllSubCategories);
+router.get(
+  "/getSubCategoriesByCategory",
+  auth,
+  isAdmin,
+  getSubCategoriesByCategory
+);
 
 // Courses can Only be Created by Instructors
 router.post("/createService", auth, isAdmin, createService);

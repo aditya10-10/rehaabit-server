@@ -6,6 +6,10 @@ const subCategorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  icon: {
+    type: String,
+    required: true,
+  },
   service: [
     {
       type: mongoose.Schema.Types.ObjectId,

@@ -47,7 +47,7 @@ app.use("/api/v1", mailRoutes);
 app.use("/api/v1", profileRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", contactRoutes);
-app.use("/api/v1/", faqRoutes);
+app.use("/api/v1", faqRoutes);
 
 // Default route
 app.get("/", (req, res) => {
