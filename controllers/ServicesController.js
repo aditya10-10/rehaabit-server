@@ -1,7 +1,9 @@
 const Service = require("../models/Service");
-// const IncludeExclude = require("../models/IncludeExclude");
-// const RatingAndReview = require("../models/RatingAndReview");
-// const Faq = require("../models/Faq");
+const RatingAndReview = require("../models/RatingAndReviews");
+const Faq = require("../models/FAQ");
+const Include = require("../models/Include");
+const Exclude = require("../models/Exclude");
+const HowDoesItWorks = require("../models/HowDoesItWorks");
 const SubCategory = require("../models/SubCategory");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
@@ -160,6 +162,37 @@ exports.editService = async (req, res) => {
   }
 };
 
+// get the service list
+
+exports.getAllServices = async (req, res) => {
+  try {
+    const allServices = await Service.find(
+      { status: "Published" },
+      {
+        serviceName: true,
+        serviceDescription: true,
+        timeToComplete: true,
+        price: true,
+        thumbnail: true,
+        ratingAndReviews: true,
+      }
+    )
+      .populate("instructor")
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      data: allServices,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({
+      success: false,
+      message: `Can't Fetch Service Data`,
+      error: error.message,
+    });
+  }
+};
 // // DELETE a Service
 // exports.deleteService = async (req, res) => {
 //   try {
@@ -216,3 +249,94 @@ exports.editService = async (req, res) => {
 //     });
 //   }
 // };
+
+exports.deleteService = async (req, res) => {
+  try {
+    const { serviceId, subCategoryId } = req.body;
+
+    // Validate input
+    if (!serviceId || !subCategoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Service ID and SubCategory ID are required",
+      });
+    }
+
+    // Find the service
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // Remove the service reference from the SubCategory
+    await SubCategory.findByIdAndUpdate(subCategoryId, {
+      $pull: { services: serviceId },
+    });
+
+    // Delete the service
+    await Service.findByIdAndDelete(serviceId);
+
+    // Optionally, you may want to delete related documents (howDoesItWorks, includes, excludes, faqs, ratingAndReviews) if needed.
+    // Example:
+    await HowDoesItWorks.deleteMany({ _id: { $in: service.howDoesItWorks } });
+    await Include.deleteMany({ _id: { $in: service.includes } });
+    await Exclude.deleteMany({ _id: { $in: service.excludes } });
+    await Faq.deleteMany({ _id: { $in: service.faqs } });
+    // await RatingAndReview.deleteMany({ _id: { $in: service.ratingAndReviews } });
+
+    return res.status(200).json({
+      success: true,
+      message: "Service deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting service:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// Get full service details
+exports.getFullServiceDetails = async (req, res) => {
+  try {
+    const { serviceId } = req.body;
+
+    if (!serviceId) {
+      return res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+    }
+
+    const service = await Service.findById(serviceId)
+      .populate("howDoesItWorks")
+      .populate("includes")
+      .populate("excludes")
+      .populate("faqs");
+    // .populate("ratingAndReviews");
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: service,
+    });
+  } catch (error) {
+    console.error("Error fetching service details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
