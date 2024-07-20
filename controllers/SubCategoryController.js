@@ -29,6 +29,7 @@ exports.createSubCategory = async (req, res) => {
     const newSubCategory = await SubCategory.create({
       subCategoryName,
       icon: image.secure_url,
+      categoryId
     });
 
     // Add the new SubCategory to the Category's content array
@@ -50,6 +51,7 @@ exports.createSubCategory = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "SubCategory created successfully",
+      newSubCategory,
       updatedCategory,
     });
   } catch (error) {
@@ -98,6 +100,7 @@ exports.updateSubCategoryName = async (req, res) => {
       success: true,
       message: "SubCategory name updated successfully",
       data: updatedCategory,
+      updatedSubCategory
     });
   } catch (error) {
     console.error("Error updating SubCategory name:", error);
@@ -155,6 +158,7 @@ exports.updateSubCategoryIcon = async (req, res) => {
       success: true,
       message: "SubCategory icon updated successfully",
       data: updatedCategory,
+      updatedSubCategory
     });
   } catch (error) {
     console.error("Error updating SubCategory icon:", error);
@@ -228,7 +232,7 @@ exports.deleteSubCategory = async (req, res) => {
     }
 
     // Delete the SubCategory
-    await SubCategory.findByIdAndDelete(subCategoryId);
+    const deletedSubCategory = await SubCategory.findByIdAndDelete(subCategoryId);
 
     // Find the updated Category and return
     const updatedCategory = await Category.findById(categoryId)
@@ -239,6 +243,7 @@ exports.deleteSubCategory = async (req, res) => {
       success: true,
       message: "SubCategory deleted successfully",
       data: updatedCategory,
+      deletedSubCategory
     });
   } catch (error) {
     console.error("Error deleting SubCategory:", error);
@@ -291,7 +296,7 @@ exports.showAllSubCategories = async (req, res) => {
 // ! This function is not working as expected because params and body request or get or post
 exports.getSubCategoriesByCategory = async (req, res) => {
   try {
-    const { categoryId } = req.params;
+    const { categoryId } = req.body;
 
     // Validate input
     if (!categoryId) {
