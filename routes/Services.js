@@ -99,7 +99,7 @@ router.put("/updateSubCategoryIcon", auth, isAdmin, updateSubCategoryIcon);
 router.delete("/deleteSubCategory", auth, isAdmin, deleteSubCategory);
 // show all subcategories
 router.get("/showAllSubCategories", auth, isAdmin, showAllSubCategories);
-router.get(
+router.post(
   "/getSubCategoriesByCategory",
   auth,
   isAdmin,
