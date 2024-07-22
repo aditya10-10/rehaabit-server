@@ -31,7 +31,7 @@ exports.createFAQ = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "FAQ created successfully",
-      updatedService,
+      service: updatedService,
     });
   } catch (error) {
     console.error("Error creating FAQ:", error);

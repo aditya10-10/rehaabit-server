@@ -29,7 +29,7 @@ exports.createExclude = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Exclude created successfully",
-      updatedService,
+      service: updatedService,
     });
   } catch (error) {
     console.error("Error creating Exclude:", error);
