@@ -58,6 +58,8 @@ exports.createService = async (req, res) => {
       warranty,
       status,
       thumbnail: thumbnailImage.secure_url,
+      categoryId,
+      subCategoryId,
     });
 
     // Add the new SubCategory to the Category's content array

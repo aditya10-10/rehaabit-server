@@ -58,7 +58,8 @@ const servicesSchema = new mongoose.Schema({
     type: String,
     enum: ["Draft", "Published"],
   },
-
+  categoryId: { type: String, required: true },
+  subCategoryId: { type: String, required: true },
   createdAt: {
     type: Date,
     default: Date.now,
