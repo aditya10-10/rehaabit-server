@@ -164,38 +164,8 @@ exports.editService = async (req, res) => {
   }
 };
 
-// get the service list
+// DELETE a Service
 
-exports.getAllServices = async (req, res) => {
-  try {
-    const allServices = await Service.find(
-      { status: "Published" },
-      {
-        serviceName: true,
-        serviceDescription: true,
-        timeToComplete: true,
-        price: true,
-        thumbnail: true,
-        ratingAndReviews: true,
-      }
-    )
-      .populate("instructor")
-      .exec();
-
-    return res.status(200).json({
-      success: true,
-      data: allServices,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(404).json({
-      success: false,
-      message: `Can't Fetch Service Data`,
-      error: error.message,
-    });
-  }
-};
-// // DELETE a Service
 // exports.deleteService = async (req, res) => {
 //   try {
 //     const { serviceId } = req.body;
@@ -336,6 +306,43 @@ exports.getFullServiceDetails = async (req, res) => {
   } catch (error) {
     console.error("Error fetching service details:", error);
     res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// GET all Services
+exports.getAllServices = async (req, res) => {
+  try {
+    // Fetch all services from the database
+    const allServices = await Service.find({}).populate([
+      {
+        path: "howDoesItWorks",
+      },
+      {
+        path: "includes",
+      },
+      {
+        path: "excludes",
+      },
+      {
+        path: "faqs",
+      },
+      {
+        path: "ratingAndReviews",
+      },
+    ]);
+
+    // Return the fetched services
+    return res.status(200).json({
+      success: true,
+      data: allServices,
+    });
+  } catch (error) {
+    console.error("Error fetching all services:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,

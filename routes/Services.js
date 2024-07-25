@@ -10,6 +10,7 @@ const {
   editService,
   deleteService,
   getFullServiceDetails,
+  getAllServices,
 } = require("../controllers/ServicesController");
 
 // Categories Controllers Import
@@ -117,6 +118,8 @@ router.put("/editService", auth, isAdmin, editService);
 router.delete("/deleteService", auth, isAdmin, deleteService);
 
 router.get("/getFullServiceDetails", auth, isAdmin, getFullServiceDetails);
+
+router.get("/getAllServices", auth, isAdmin, getAllServices);
 
 // ********************************************************************************************************
 //                                      Include, Exclude, FAQ, HowDoesItWorks routes
