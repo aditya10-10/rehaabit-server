@@ -152,7 +152,7 @@ exports.editService = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Service updated successfully",
-      service: updatedService,
+      data: updatedService,
     });
   } catch (error) {
     console.error("Error updating service:", error);
@@ -249,7 +249,7 @@ exports.deleteService = async (req, res) => {
     });
 
     // Delete the service
-    await Service.findByIdAndDelete(serviceId);
+    const deletedService = await Service.findByIdAndDelete(serviceId);
 
     // Optionally, you may want to delete related documents (howDoesItWorks, includes, excludes, faqs, ratingAndReviews) if needed.
     // Example:
@@ -262,6 +262,7 @@ exports.deleteService = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Service deleted successfully",
+      data: deletedService
     });
   } catch (error) {
     console.error("Error deleting service:", error);
