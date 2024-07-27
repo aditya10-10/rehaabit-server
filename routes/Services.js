@@ -117,7 +117,7 @@ router.put("/editService", auth, isAdmin, editService);
 
 router.delete("/deleteService", auth, isAdmin, deleteService);
 
-router.get("/getFullServiceDetails", auth, isAdmin, getFullServiceDetails);
+router.post("/getFullServiceDetails", auth, isAdmin, getFullServiceDetails);
 
 router.get("/getAllServices", auth, isAdmin, getAllServices);
 
