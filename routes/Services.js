@@ -99,7 +99,7 @@ router.put("/updateSubCategoryIcon", auth, isAdmin, updateSubCategoryIcon);
 // Delete a subcategory
 router.delete("/deleteSubCategory", auth, isAdmin, deleteSubCategory);
 // show all subcategories
-router.get("/showAllSubCategories", auth, isAdmin, showAllSubCategories);
+router.get("/showAllSubCategories", showAllSubCategories);
 router.post(
   "/getSubCategoriesByCategory",
   auth,
@@ -117,9 +117,9 @@ router.put("/editService", auth, isAdmin, editService);
 
 router.delete("/deleteService", auth, isAdmin, deleteService);
 
-router.post("/getFullServiceDetails", auth, isAdmin, getFullServiceDetails);
+router.post("/getFullServiceDetails", getFullServiceDetails);
 
-router.get("/getAllServices", auth, isAdmin, getAllServices);
+router.get("/getAllServices", getAllServices);
 
 // ********************************************************************************************************
 //                                      Include, Exclude, FAQ, HowDoesItWorks routes
