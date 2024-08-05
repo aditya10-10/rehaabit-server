@@ -100,12 +100,7 @@ router.put("/updateSubCategoryIcon", auth, isAdmin, updateSubCategoryIcon);
 router.delete("/deleteSubCategory", auth, isAdmin, deleteSubCategory);
 // show all subcategories
 router.get("/showAllSubCategories", showAllSubCategories);
-router.post(
-  "/getSubCategoriesByCategory",
-  auth,
-  isAdmin,
-  getSubCategoriesByCategory
-);
+router.post("/getSubCategoriesByCategory", getSubCategoriesByCategory);
 
 // ********************************************************************************************************
 //                                      Service routes
