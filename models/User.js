@@ -27,10 +27,12 @@ const userSchema = new mongoose.Schema(
       required: [true, "Additional details are required"],
       ref: "Profile",
     },
-    order: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Order",
-    },
+    orders: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
+      },
+    ],
     image: {
       type: String,
       trim: true,
