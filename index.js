@@ -15,6 +15,7 @@ const profileRoutes = require("./routes/Profile");
 const faqRoutes = require("./routes/Faq");
 const cartRoutes = require("./routes/Cart");
 const addressRoutes = require("./routes/Address");
+const orderRoutes = require("./routes/Order");
 
 // Connect to Cloudinary
 const database = require("./config/database");
@@ -52,6 +53,7 @@ app.use("/api/v1", contactRoutes);
 app.use("/api/v1", faqRoutes);
 app.use("/api/v1", cartRoutes);
 app.use("/api/v1", addressRoutes);
+app.use("/api/v1", orderRoutes);
 
 // Default route
 app.get("/", (req, res) => {

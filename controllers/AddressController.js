@@ -2,28 +2,6 @@ const mongoose = require("mongoose");
 const Address = require("../models/Address");
 const User = require("../models/User");
 
-const CartPopulate = async (cartId) => {
-  const populatedCart = await Cart.findById(cartId).populate({
-    path: "services.serviceId",
-    model: "Service",
-  });
-
-  const servicesWithDetails = populatedCart.services.map((service) => ({
-    ...service.serviceId._doc,
-    serviceId: service.serviceId._id,
-    qty: service.qty,
-    price: service.price,
-    _id: service._id,
-  }));
-
-  const cartWithDetails = {
-    ...populatedCart._doc,
-    services: servicesWithDetails,
-  };
-
-  return cartWithDetails;
-};
-
 exports.addAddress = async (req, res) => {
   try {
     const {
@@ -49,6 +27,8 @@ exports.addAddress = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    const isFirstAddress = user.address.length === 0;
+
     const newAddress = new Address({
       user: userId,
       name,
@@ -61,6 +41,7 @@ exports.addAddress = async (req, res) => {
       phoneNo,
       alternativePhone,
       addressType,
+      status: isFirstAddress ? "Default" : undefined,
     });
 
     await newAddress.save();
@@ -74,7 +55,7 @@ exports.addAddress = async (req, res) => {
       data: newAddress,
     });
   } catch (error) {
-    console.error("Error adding service to cart:", error);
+    console.error("Error adding Address:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -84,137 +65,114 @@ exports.addAddress = async (req, res) => {
 
 exports.updateAddress = async (req, res) => {
   try {
-    const { serviceId, action } = req.body;
+    const {
+      addressId,
+      name,
+      locality,
+      landmark,
+      address,
+      pincode,
+      city,
+      state,
+      phoneNo,
+      alternativePhone,
+      addressType,
+      status,
+    } = req.body;
     const userId = req.user.id;
 
-    if (!serviceId || !action) {
-      return res.status(400).json({
+    const addressToUpdate = await Address.findOne({ _id: addressId, user: userId });
+
+    if (!addressToUpdate) {
+      return res.status(404).json({
         success: false,
-        message: "Service Id and action are required",
+        message: "Address not found",
       });
     }
 
-    const user = await User.findById(userId).populate("cart");
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    if (name) addressToUpdate.name = name;
+    if (locality) addressToUpdate.locality = locality;
+    if (landmark) addressToUpdate.landmark = landmark;
+    if (address) addressToUpdate.address = address;
+    if (pincode) addressToUpdate.pincode = pincode;
+    if (city) addressToUpdate.city = city;
+    if (state) addressToUpdate.state = state;
+    if (phoneNo) addressToUpdate.phoneNo = phoneNo;
+    if (alternativePhone) addressToUpdate.alternativePhone = alternativePhone;
+    if (addressType) addressToUpdate.addressType = addressType;
+
+    if (status === "Default") {
+      await Address.updateMany(
+        { user: userId, status: "Default" },
+        { status: "" }
+      );
+      addressToUpdate.status = "Default";
     }
 
-    let cart = user.cart;
-    if (!cart) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Cart not found" });
-    } else {
-      cart = await Cart.findById(cart._id);
-    }
-
-    const service = cart.services.find(
-      (item) => item.serviceId.toString() === serviceId
-    );
-    if (!service) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Service not found in cart" });
-    }
-
-    if (action === "increment") {
-      service.qty += 1;
-      cart.totalQty += 1;
-      cart.totalCost += service.price;
-    } else if (action === "decrement") {
-      if (service.qty <= 1) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Quantity cannot be less than 1" });
-      }
-      service.qty -= 1;
-      cart.totalQty -= 1;
-      cart.totalCost -= service.price;
-    } else {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid action" });
-    }
-
-    await cart.save();
-
-    const cartWithDetails = await CartPopulate(cart._id.toString());
+    await addressToUpdate.save();
 
     return res.status(200).json({
       success: true,
-      message: "Cart updated successfully",
-      data: cartWithDetails,
+      message: "Address updated successfully",
+      data: addressToUpdate,
     });
   } catch (error) {
-    console.error("Error updating cart:", error);
+    console.error("Error updating address:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
+
 
 exports.deleteAddress = async (req, res) => {
   try {
-    const { serviceId } = req.body;
+    const { addressId } = req.body;
     const userId = req.user.id;
-    if (!serviceId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Service Id is required" });
+
+    if (!addressId) {
+      return res.status(400).json({
+        success: false,
+        message: "Address ID is required",
+      });
     }
 
-    const user = await User.findById(userId).populate("cart");
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    const addressToDelete = await Address.findOne({ _id: addressId, user: userId });
+
+    if (!addressToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: "Address not found",
+      });
     }
 
-    let cart = user.cart;
-    if (!cart) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Cart not found" });
-    } else {
-      cart = await Cart.findById(cart._id);
+    const isDefault = addressToDelete.status === "Default";
+
+    await Address.deleteOne({ _id: addressId });
+
+    if (isDefault) {
+      const otherAddresses = await Address.find({ user: userId });
+      if (otherAddresses.length > 0) {
+        otherAddresses[0].status = "Default";
+        await otherAddresses[0].save();
+      }
     }
-
-    const serviceIndex = cart.services.findIndex(
-      (item) => item.serviceId.toString() === serviceId
-    );
-
-    if (serviceIndex === -1) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Service not found in cart" });
-    }
-
-    const service = cart.services[serviceIndex];
-    cart.totalQty -= service.qty;
-    cart.totalCost -= service.price * service.qty;
-
-    cart.services.splice(serviceIndex, 1);
-
-    await cart.save();
-
-    const cartWithDetails = await CartPopulate(cart._id.toString());
 
     return res.status(200).json({
       success: true,
-      message: "Service removed from cart successfully",
-      data: cartWithDetails,
+      message: "Address removed successfully",
+      data: addressToDelete,
     });
   } catch (error) {
-    console.error("Error removing service from cart:", error);
+    console.error("Error removing address:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
+
 
 exports.getUserAddresses = async (req, res) => {
   try {

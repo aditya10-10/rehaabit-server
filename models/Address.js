@@ -72,6 +72,10 @@ const addressSchema = new mongoose.Schema({
     required: [true, "Address type is required"],
     default: "Home",
   },
+  status: {
+    type: String,
+    enum: ["Default", ""],
+  },
 });
 
 // Adding indexes for optimized query performance
