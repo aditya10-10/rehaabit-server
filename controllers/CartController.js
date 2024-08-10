@@ -92,12 +92,10 @@ exports.updateCart = async (req, res) => {
     const userId = req.user.id;
 
     if (!cartServiceId || !action) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Cart Service Id and action are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Cart Service Id and action are required",
+      });
     }
 
     const user = await User.findById(userId).populate("cart");
@@ -261,6 +259,66 @@ exports.getAllCartServices = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving cart items:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.updateCartFromLocalStorage = async (req, res) => {
+  try {
+    const { cartServices, totalCost, totalQty } = req.body;
+    const userId = req.user.id;
+
+    // Find the user's cart ID
+    const user = await User.findById(userId).populate("cart");
+
+    if (!user || !user.cart) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart not found",
+      });
+    }
+
+    let cart = await Cart.findById(user.cart._id);
+
+    if (!cart) {
+      cart = new Cart({
+        services: cartServices,
+        totalCost,
+        totalQty,
+      });
+      user.cart = cart._id;
+      await user.save();
+    } else {
+      cartServices.forEach((localService) => {
+        const existingService = cart.services.find(
+          (service) => service.serviceId.toString() === localService.serviceId
+        );
+
+        if (existingService) {
+          existingService.qty += localService.qty;
+          existingService.price = localService.price;
+        } else {
+          cart.services.push(localService);
+        }
+      });
+
+      cart.totalQty += totalQty;
+      cart.totalCost += totalCost;
+    }
+
+    await cart.save();
+
+    const cartWithDetails = await CartPopulate(cart._id.toString());
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart updated successfully",
+      data: cartWithDetails,
+    });
+  } catch (error) {
+    console.error("Error updating cart:", error);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
