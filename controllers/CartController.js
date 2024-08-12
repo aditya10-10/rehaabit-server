@@ -68,7 +68,7 @@ exports.addToCart = async (req, res) => {
       qty,
     });
     cart.totalQty += qty;
-    cart.totalCost += (price * qty);
+    cart.totalCost += price * qty;
 
     await cart.save();
     const cartWithDetails = await CartPopulate(cart._id.toString());
@@ -195,7 +195,7 @@ exports.removeFromCart = async (req, res) => {
 
     const service = cart.services[serviceIndex];
     cart.totalQty -= service.qty;
-    cart.totalCost -= (service.price * service.qty);
+    cart.totalCost -= service.price * service.qty;
     cart.services.splice(serviceIndex, 1);
 
     await cart.save();
