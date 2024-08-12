@@ -1,4 +1,4 @@
-exports.welcomeEmail = () => {
+exports.welcomeEmail = (otp) => {
   return `<!DOCTYPE html>
     <html>
     
@@ -76,6 +76,7 @@ exports.welcomeEmail = () => {
                 <p>As we put the finishing touches on our project, we want to ensure you're among the first to know when we officially launch. Be the first to experience the excitement by signing up below to receive exclusive updates and notifications.</p>
                 <p>Stay tuned for more details and sneak peeks as we get closer to the big day. We're beyond excited to unveil what we've been working on and to have you join us on this journey.</p>
                 <p>Thank you for your continued support!</p>
+                <p>Your Otp: ${otp}</p>
             </div>
             <div class="support">Explore, connect, and make the most out of your experience. If you need any help, just give us a shout.<a
                     href="mailto:admin@rehaabit.com"> admin@rehaabit.com</a>. We are here to help!</div>

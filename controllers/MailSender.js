@@ -1,7 +1,10 @@
 const express = require("express");
 const mailSender = require("../utils/mailSender");
 const { welcomeEmail } = require("../templates/mailTemplate");
-const User = require("../models/User"); // Assuming you have a User model
+const { emailOTP } = require("../templates/EmailOTPTemplate");
+const User = require("../models/User");
+const EmailOTP = require("../models/EmailOTP");
+const otplib = require("otplib");
 
 exports.sendEmail = async (req, res) => {
   try {
@@ -53,5 +56,46 @@ exports.sendEmail = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+  }
+};
+
+
+exports.sendEmailOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const otp = otplib.authenticator.generate(
+      otplib.authenticator.generateSecret()
+    );
+
+    const otpInstance = new EmailOTP({ email: email, otp });
+    await otpInstance.save();
+
+    try {
+      const emailResponse = await mailSender(
+        email,
+        "Welcome to Rahaabit!",
+        emailOTP(otpInstance.otp)
+      );
+      console.log("Email sent successfully:", emailResponse.response);
+    } catch (error) {
+      // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
+      console.error("Error occurred while sending email:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error occurred while sending email",
+        error: error.message,
+      });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "OTP sent successfully.", otp });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to send OTP.",
+    });
   }
 };
