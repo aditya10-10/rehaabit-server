@@ -75,9 +75,16 @@ exports.placeOrder = async (req, res) => {
     });
     await orderStatus.save();
 
+    const servicesInOrder = cart.services.map((service) => ({
+      serviceId: service.serviceId._id,
+      qty: service.qty,
+      price: service.price,
+      serviceName: service.serviceName || service.serviceId.name,
+    }));
+
     const newOrder = new Order({
       user: userId,
-      cart: cart._id,
+      service: servicesInOrder,
       address: selectedAddress._id,
       paymentId: paymentId,
       status: orderStatus._id,
@@ -87,13 +94,8 @@ exports.placeOrder = async (req, res) => {
     user.orders.push(newOrder._id);
     await user.save();
 
-    const cartWithDetails = await CartPopulate(cart._id.toString());
-
     const orderWithDetails = await Order.findById(newOrder._id)
-      .populate({
-        path: "cart",
-        cartWithDetails,
-      })
+      .populate("service.serviceId")
       .populate("address")
       .populate("status");
 
@@ -194,6 +196,45 @@ exports.purchaseService = async (req, res) => {
     });
   } catch (error) {
     console.error("Error purchasing service", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.getUserOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).populate({
+      path: "orders",
+      populate: [
+        {
+          path: "service.serviceId",
+          model: "Service",
+        },
+        { path: "address" },
+        { path: "status" },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const ordersWithDetails = user.orders;
+
+    return res.status(200).json({
+      success: true,
+      message: "User orders retrieved successfully",
+      data: ordersWithDetails,
+    });
+  } catch (error) {
+    console.error("Error getting user orders:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
