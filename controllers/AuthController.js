@@ -55,7 +55,13 @@ exports.sendOTP = async (req, res) => {
 // Signup: Verify OTP and create a new user
 exports.signup = async (req, res) => {
   try {
-    let { firstName, lastName, contactNumber, otp, accountType } = req.body;
+    let {
+      firstName,
+      lastName,
+      contactNumber,
+      otp,
+      accountType = "User",
+    } = req.body;
 
     // Convert contactNumber to string if it's a number
     if (typeof contactNumber === "number") {
