@@ -7,8 +7,8 @@ const {
   getUserOrders,
 } = require("../controllers/OrderController");
 
-router.post("/placeOrder", auth, isAdmin, placeOrder);
-router.post("/purchaseService", auth, isAdmin, purchaseService);
-router.get("/getUserOrders", auth, isAdmin, getUserOrders);
+router.post("/placeOrder", auth, isUser, placeOrder);
+router.post("/purchaseService", auth, isUser, purchaseService);
+router.get("/getUserOrders", auth, getUserOrders);
 
 module.exports = router;
