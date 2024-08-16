@@ -243,3 +243,38 @@ exports.getUserOrders = async (req, res) => {
     });
   }
 };
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const ordersWithDetails = await Order.find({})
+      .populate({
+        path: "service.serviceId",
+        model: "Service",
+      })
+      .populate("address")
+      .populate("status")
+      .populate("user");
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      data: ordersWithDetails,
+    });
+  } catch (error) {
+    console.error("Error getting orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
