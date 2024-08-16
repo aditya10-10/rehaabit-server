@@ -40,15 +40,17 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId)
-      .populate({
-        path: "cart",
-        populate: {
-          path: "services.serviceId",
+    const user = await User.findById(userId).populate({
+      path: "orders",
+      populate: [
+        {
+          path: "services.serviceId", // Correctly nested path
           model: "Service",
         },
-      })
-      .populate("address");
+        { path: "address" },
+        { path: "status" },
+      ],
+    });
 
     if (!user) {
       return res
