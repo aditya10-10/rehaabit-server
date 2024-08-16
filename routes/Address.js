@@ -9,9 +9,9 @@ const {
   getUserAddresses,
 } = require("../controllers/AddressController");
 
-router.post("/addAddress", auth, isAdmin, addAddress);
-router.put("/updateAddress", auth, isAdmin, updateAddress);
-router.delete("/deleteAddress", auth, isAdmin, deleteAddress);
-router.get("/getUserAddresses", auth, isAdmin, getUserAddresses);
+router.post("/addAddress", auth, isUser, addAddress);
+router.put("/updateAddress", auth, isUser, updateAddress);
+router.delete("/deleteAddress", auth, isUser, deleteAddress);
+router.get("/getUserAddresses", auth, getUserAddresses);
 
 module.exports = router;

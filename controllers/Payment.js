@@ -8,7 +8,7 @@ const Service = require("../models/Service");
 
 // Process Payment and Create Razorpay Order
 exports.processPayment = async (req, res) => {
-  const { services } = req.body;
+  const { services } = req.body; // This should be an array of service objects with serviceId, qty, and price
   const userId = req.user.id;
 
   console.log("Services being sent:", services);
@@ -18,25 +18,28 @@ exports.processPayment = async (req, res) => {
   }
 
   let totalAmount = 0;
-  for (const serviceId of services) {
-    const service = await Service.findById(serviceId);
-    console.log("services", service);
-    if (!service) {
-      return res.json({
-        success: false,
-        message: `Service ${serviceId} not found`,
-      });
-    }
-    totalAmount += service.price;
-  }
-
-  const options = {
-    amount: totalAmount * 100, // amount in the smallest currency unit
-    currency: "INR",
-    receipt: `receipt_${crypto.randomBytes(10).toString("hex")}`,
-  };
-
   try {
+    for (const service of services) {
+      const { serviceId, qty, price } = service;
+      const serviceRecord = await Service.findById(serviceId);
+
+      if (!serviceRecord) {
+        return res.status(404).json({
+          success: false,
+          message: `Service ${serviceId} not found`,
+        });
+      }
+
+      // Calculate the total amount based on qty and price
+      totalAmount += price * qty;
+    }
+
+    const options = {
+      amount: totalAmount * 100, // amount in the smallest currency unit
+      currency: "INR",
+      receipt: `receipt_${crypto.randomBytes(10).toString("hex")}`,
+    };
+
     const paymentResponse = await instance.orders.create(options);
     res.json({ success: true, message: paymentResponse });
   } catch (error) {
@@ -46,6 +49,8 @@ exports.processPayment = async (req, res) => {
 };
 
 // Verify Payment and Update Order
+// Verify Payment and Update Order
+// Verify Payment and Update Order
 exports.verifyPayment = async (req, res) => {
   const {
     razorpay_order_id,
@@ -53,7 +58,10 @@ exports.verifyPayment = async (req, res) => {
     razorpay_signature,
     services,
   } = req.body;
+
   const userId = req.user.id;
+
+  console.log("Payment Verification Details");
 
   if (
     !razorpay_order_id ||
@@ -82,9 +90,20 @@ exports.verifyPayment = async (req, res) => {
   // Proceed to add services to the order
   try {
     const newOrder = await addToOrder(services, userId);
-    return res
-      .status(200)
-      .json({ success: true, message: "Payment Verified", order: newOrder });
+
+    // Add the new order to the user's orders array
+    const addOrderResult = await addOrderToUser(userId, newOrder._id);
+    if (!addOrderResult.success) {
+      return res
+        .status(500)
+        .json({ success: false, message: addOrderResult.message });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment Verified and Order Added",
+      order: newOrder,
+    });
   } catch (error) {
     console.error("Error adding to order:", error);
     return res
@@ -93,6 +112,7 @@ exports.verifyPayment = async (req, res) => {
   }
 };
 
+// Function to add the order to the user's schema
 // Function to add services to the user's order
 const addToOrder = async (services, userId) => {
   try {
@@ -105,10 +125,11 @@ const addToOrder = async (services, userId) => {
     let totalQty = cart.totalQty;
     let totalCost = cart.totalCost;
 
-    for (const serviceId of services) {
-      const service = await Service.findById(serviceId);
+    for (const service of services) {
+      const { serviceId, qty, price } = service;
+      const serviceRecord = await Service.findById(serviceId);
 
-      if (!service) {
+      if (!serviceRecord) {
         throw new Error(`Service ${serviceId} not found`);
       }
 
@@ -117,20 +138,20 @@ const addToOrder = async (services, userId) => {
       );
 
       if (existingServiceIndex > -1) {
-        cart.services[existingServiceIndex].qty += 1;
-        cart.services[existingServiceIndex].price = service.price;
+        cart.services[existingServiceIndex].qty += qty;
+        cart.services[existingServiceIndex].price = price;
       } else {
         cart.services.push({
-          serviceId: service._id,
-          qty: 1,
-          price: service.price,
-          serviceName: service.name,
-          serviceDescription: service.description,
+          serviceId: serviceRecord._id,
+          qty,
+          price,
+          serviceName: serviceRecord.name,
+          serviceDescription: serviceRecord.description,
         });
       }
 
-      totalQty += 1;
-      totalCost += service.price;
+      totalQty += qty;
+      totalCost += price * qty;
     }
 
     cart.totalQty = totalQty;
@@ -139,7 +160,7 @@ const addToOrder = async (services, userId) => {
     await cart.save();
 
     const order = await Order.findOneAndUpdate(
-      { userId },
+      { user: userId }, // Assuming `user` is the reference in your order schema
       {
         $push: { services: { $each: cart.services } },
         totalQty: cart.totalQty,
@@ -152,5 +173,34 @@ const addToOrder = async (services, userId) => {
   } catch (error) {
     console.error("Error adding services to order:", error);
     throw error;
+  }
+};
+
+// Function to add the order to the user's schema
+const addOrderToUser = async (userId, orderId) => {
+  try {
+    // Find the user by their ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
+    // Add the order ID to the user's orders array
+    user.orders.push(orderId);
+
+    // Save the updated user document
+    await user.save();
+
+    return {
+      success: true,
+      message: "Order added to user's profile successfully",
+    };
+  } catch (error) {
+    console.error("Error adding order to user:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 };

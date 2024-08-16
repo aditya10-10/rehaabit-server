@@ -7,7 +7,7 @@ const orderSchema = Schema({
     ref: "User",
     required: true,
   },
-  service: [
+  services: [
     {
       serviceId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,14 +15,14 @@ const orderSchema = Schema({
       },
       qty: {
         type: Number,
-        default: 0,
+        required: true,
       },
       price: {
         type: Number,
+        required: true,
       },
-      serviceName: {
-        type: String,
-      },
+      serviceName: String,
+      serviceDescription: String,
     },
   ],
   address: {
@@ -31,6 +31,14 @@ const orderSchema = Schema({
   },
   paymentId: {
     type: String,
+    required: true,
+  },
+  Qty: {
+    type: Number,
+    required: true,
+  },
+  totalCost: {
+    type: Number,
     required: true,
   },
   status: {
