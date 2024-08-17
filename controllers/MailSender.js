@@ -59,7 +59,6 @@ exports.sendEmail = async (req, res) => {
   }
 };
 
-
 exports.sendEmailOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -96,6 +95,33 @@ exports.sendEmailOTP = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to send OTP.",
+    });
+  }
+};
+
+exports.verifyEmailOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // Find the most recent OTP for the email
+    const latestOTP = await EmailOTP.findOne({ email }).sort({ createdAt: -1 });
+
+    if (!latestOTP || String(latestOTP.otp) !== String(otp)) {
+      return res.status(400).json({ success: false, message: "Invalid OTP." });
+    }
+
+    // Delete the OTP after successful verification
+    await EmailOTP.deleteOne({ _id: latestOTP._id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Email Verified",
+    });
+  } catch (error) {
+    console.error("Error verifying email OTP:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to verify OTP.",
     });
   }
 };
