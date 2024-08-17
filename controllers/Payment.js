@@ -145,8 +145,8 @@ const addToOrder = async (services, userId) => {
           serviceId: serviceRecord._id,
           qty,
           price,
-          serviceName: serviceRecord.name,
-          serviceDescription: serviceRecord.description,
+          serviceName: serviceRecord.serviceName,
+          serviceDescription: serviceRecord.serviceDescription,
         });
       }
 

@@ -33,6 +33,7 @@ exports.placeOrder = async (req, res) => {
     const { addressId, paymentId } = req.body;
     const userId = req.user.id;
 
+    // Validate request body
     if (!addressId || !paymentId) {
       return res.status(400).json({
         success: false,
@@ -40,76 +41,89 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId).populate({
-      path: "orders",
-      populate: [
-        {
-          path: "services.serviceId", // Correctly nested path
+    // Find user with cart and addresses
+    const user = await User.findById(userId)
+      .populate({
+        path: "cart",
+        populate: {
+          path: "services.serviceId",
           model: "Service",
         },
-        { path: "address" },
-        { path: "status" },
-      ],
-    });
+      })
+      .populate("address");
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
+    // Check if cart exists and contains services
     const cart = user.cart;
     if (!cart || cart.services.length === 0) {
-      return res.status(400).json({ success: false, message: "Cart is empty" });
+      return res.status(400).json({
+        success: false,
+        message: "Cart is empty",
+      });
     }
 
+    // Find the selected address
     const selectedAddress = user.address.find(
       (addr) => addr._id.toString() === addressId
     );
     if (!selectedAddress) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Address not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Address not found",
+      });
     }
 
+    // Calculate the total cost from the cart (this might already be in the cart object)
+    // const totalCost = cart.services.reduce((acc, service) => {
+    //   return acc + service.qty * service.price;
+    // }, 0);
+
+    // Create a new order status
     const orderStatus = new OrderStatus({
       status: "placed",
     });
     await orderStatus.save();
 
-    const servicesInOrder = cart.services.map((service) => ({
-      serviceId: service.serviceId._id,
-      qty: service.qty,
-      price: service.price,
-      serviceName: service.serviceName || service.serviceId.name,
-    }));
-
+    // Create a new order
     const newOrder = new Order({
       user: userId,
-      service: servicesInOrder,
+      services: cart.services.map((service) => ({
+        serviceId: service.serviceId._id,
+        qty: service.qty,
+        price: service.price,
+        serviceName: service.serviceId.name,
+        serviceDescription: service.serviceId.serviceDescription,
+      })),
       address: selectedAddress._id,
       paymentId: paymentId,
+      totalCost: cart.totalCost,
       status: orderStatus._id,
     });
 
+    // Save the new order
     await newOrder.save();
+
+    // Update user's order list and clear the cart
     user.orders.push(newOrder._id);
-    await user.save();
-
-    const orderWithDetails = await Order.findById(newOrder._id)
-      .populate("service.serviceId")
-      .populate("address")
-      .populate("status");
-
+    
     cart.services = [];
     cart.totalQty = 0;
     cart.totalCost = 0;
-    await cart.save();
 
+    await cart.save();
+    await user.save();
+
+    // Return the order details
     return res.status(200).json({
       success: true,
       message: "Order placed successfully",
-      data: orderWithDetails,
+      data: newOrder,
     });
   } catch (error) {
     console.error("Error placing order", error);
@@ -213,7 +227,7 @@ exports.getUserOrders = async (req, res) => {
       path: "orders",
       populate: [
         {
-          path: "service.serviceId",
+          path: "services.serviceId",
           model: "Service",
         },
         { path: "address" },
@@ -258,7 +272,7 @@ exports.getAllOrders = async (req, res) => {
 
     const ordersWithDetails = await Order.find({})
       .populate({
-        path: "service.serviceId",
+        path: "services.serviceId",
         model: "Service",
       })
       .populate("address")
