@@ -21,7 +21,7 @@ const validatePhoneNumber = (contactNumber) => {
 // Send OTP to user's phone number
 exports.sendOTP = async (req, res) => {
   try {
-    let { contactNumber } = req.body;
+    let { contactNumber, isSignup } = req.body;
 
     // Convert contactNumber to string if it's a number
     if (typeof contactNumber === "number") {
@@ -30,6 +30,15 @@ exports.sendOTP = async (req, res) => {
 
     // Parse and validate phone number
     const formattedPhoneNumber = validatePhoneNumber(contactNumber);
+
+    // Check if user already exists
+    const user = await User.findOne({ contactNumber: formattedPhoneNumber });
+    if (user && isSignup) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists. Please login.",
+      });
+    }
 
     // Generate OTP
     const otp = otplib.authenticator.generate(
