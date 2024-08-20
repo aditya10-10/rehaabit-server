@@ -54,6 +54,7 @@ const OrderStatus = require("../models/OrderStatus");
 exports.processPayment = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { singleOrder, isSingleOrder } = req.body;
 
     // Find user with cart and addresses
     const user = await User.findById(userId)
@@ -73,14 +74,12 @@ exports.processPayment = async (req, res) => {
       });
     }
 
-    // Check if cart exists and contains services
-    const cart = user.cart;
-    if (!cart || cart.services.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Cart is empty",
-      });
-    }
+    // Determine which services to process (from cart or singleOrder)
+    const servicesToProcess = isSingleOrder ? singleOrder : user.cart.services;
+    const totalAmount = servicesToProcess.reduce(
+      (total, service) => total + service.price * service.qty,
+      0
+    );
 
     // Find the selected address (default address)
     const selectedAddress = user.address.find(
@@ -93,13 +92,6 @@ exports.processPayment = async (req, res) => {
       });
     }
 
-    // Create a new order status
-    const orderStatus = new OrderStatus({
-      status: "placed",
-    });
-    await orderStatus.save();
-
-    const totalAmount = cart.totalCost;
     const options = {
       amount: totalAmount * 100, // amount in the smallest currency unit (INR)
       currency: "INR",
@@ -196,8 +188,13 @@ exports.processPayment = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      isSingleOrder,
+      singleOrder,
+    } = req.body;
 
     const userId = req.user.id;
     const user = await User.findById(userId)
@@ -217,14 +214,6 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    const cart = user.cart;
-    if (!cart || cart.services.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Cart is empty",
-      });
-    }
-
     const selectedAddress = user.address.find(
       (addr) => addr.status === "Default"
     );
@@ -234,10 +223,6 @@ exports.verifyPayment = async (req, res) => {
         message: "Address not found",
       });
     }
-
-    // console.log(razorpay_order_id);
-    // console.log(razorpay_payment_id);
-    // console.log(razorpay_signature);
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res
@@ -258,38 +243,53 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    // Determine which services to process (from cart or singleOrder)
+    const servicesToProcess = isSingleOrder ? singleOrder : user.cart.services;
+
     // Create a new order status
     const orderStatus = new OrderStatus({
       status: "placed",
     });
     await orderStatus.save();
 
+    console.log(singleOrder);
+
     // Create a new order
     const newOrder = new Order({
       user: userId,
-      services: cart.services.map((service) => ({
-        serviceId: service.serviceId._id,
+      services: servicesToProcess.map((service) => ({
+        serviceId: isSingleOrder ? service.serviceId : service.serviceId._id,
         qty: service.qty,
         price: service.price,
-        serviceName: service.serviceId.name,
-        serviceDescription: service.serviceId.serviceDescription,
+        serviceName: isSingleOrder
+          ? service.serviceName
+          : service.serviceId.serviceName,
+        serviceDescription: isSingleOrder
+          ? service.serviceDescription
+          : service.serviceId.serviceDescription,
       })),
       address: selectedAddress._id,
       paymentId: razorpay_payment_id,
-      totalCost: cart.totalCost,
+      totalCost: servicesToProcess.reduce(
+        (total, service) => total + service.price * service.qty,
+        0
+      ),
       status: orderStatus._id,
     });
 
     // Save the new order
     await newOrder.save();
 
-    // Update user's order list and clear the cart
-    user.orders.push(newOrder._id);
-    cart.services = [];
-    cart.totalQty = 0;
-    cart.totalCost = 0;
+    // If using the cart, clear it
+    if (!isSingleOrder) {
+      user.cart.services = [];
+      user.cart.totalQty = 0;
+      user.cart.totalCost = 0;
+      await user.cart.save();
+    }
 
-    await cart.save();
+    // Update user's order list
+    user.orders.push(newOrder._id);
     await user.save();
 
     return res.status(200).json({

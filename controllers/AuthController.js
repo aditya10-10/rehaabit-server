@@ -40,6 +40,13 @@ exports.sendOTP = async (req, res) => {
       });
     }
 
+    if (!user && !isSignup) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found. Please sign up.",
+      });
+    }
+
     // Generate OTP
     const otp = otplib.authenticator.generate(
       otplib.authenticator.generateSecret()
