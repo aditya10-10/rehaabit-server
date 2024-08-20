@@ -6,28 +6,6 @@ const OrderStatus = require("../models/OrderStatus");
 const Service = require("../models/Service");
 const Cart = require("../models/Cart");
 
-const CartPopulate = async (cartId) => {
-  const populatedCart = await Cart.findById(cartId).populate({
-    path: "services.serviceId",
-    model: "Service",
-  });
-
-  const servicesWithDetails = populatedCart.services.map((service) => ({
-    ...service.serviceId._doc,
-    serviceId: service.serviceId._id,
-    qty: service.qty,
-    price: service.price,
-    _id: service._id,
-  }));
-
-  const cartWithDetails = {
-    ...populatedCart._doc,
-    services: servicesWithDetails,
-  };
-
-  return cartWithDetails;
-};
-
 exports.placeOrder = async (req, res) => {
   try {
     const { addressId, paymentId } = req.body;
@@ -111,7 +89,7 @@ exports.placeOrder = async (req, res) => {
 
     // Update user's order list and clear the cart
     user.orders.push(newOrder._id);
-    
+
     cart.services = [];
     cart.totalQty = 0;
     cart.totalCost = 0;
@@ -223,31 +201,43 @@ exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = await User.findById(userId).populate({
+    // Populate orders and services.serviceId
+    const populatedUser = await User.findById(userId).populate({
       path: "orders",
       populate: [
         {
           path: "services.serviceId",
           model: "Service",
         },
-        { path: "address" },
-        { path: "status" },
+        {
+          path: "status",
+        },
       ],
     });
 
-    if (!user) {
+    if (!populatedUser) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    const ordersWithDetails = user.orders;
+    // Map over the user's orders and replace the serviceId with the actual service object
+    const ordersWithServiceDetails = populatedUser.orders.map((order) => ({
+      ...order._doc,
+      services: order.services.map((service) => ({
+        ...service._doc,
+        ...service.serviceId._doc, // Include the full service object here
+        serviceId: service.serviceId._id, // Keep the serviceId if needed separately
+        serviceName: service.serviceId.serviceName, // Optionally add other details directly
+        serviceDescription: service.serviceId.serviceDescription,
+      })),
+    }));
 
     return res.status(200).json({
       success: true,
       message: "User orders retrieved successfully",
-      data: ordersWithDetails,
+      data: ordersWithServiceDetails,
     });
   } catch (error) {
     console.error("Error getting user orders:", error);
