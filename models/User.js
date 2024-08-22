@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema(
     },
     additionalDetails: {
       type: mongoose.Schema.Types.ObjectId,
-      required: [true, "Additional details are required"],
       ref: "Profile",
     },
     orders: [
@@ -47,7 +46,13 @@ const userSchema = new mongoose.Schema(
         ref: "Address",
       },
     ],
+    partner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Partner",
+      required: [true, "Partner ID is required"],
+    },
   },
+
   { timestamps: true }
 );
 
