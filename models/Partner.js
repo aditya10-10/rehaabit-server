@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const PartnerSchema = new mongoose.Schema({
-  // Personal information
+
+  // Personal information********
   firstName: {
     type: String,
     required: true,
@@ -51,48 +52,9 @@ const PartnerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // additional fields for partners
-  companySize: {
-    type: String,
-    enum: ["Micro", "Small", "Medium", "Large", "Enterprise"],
-    required: true,
-  },
-  numberOfEmployees: {
-    type: Number,
-    required: true,
-  },
-  industry: {
-    type: String,
-    required: true,
-  },
-  yearsOfExperience: {
-    type: Number,
-    required: true,
-  },
-  specialization: [String],
 
-  // Account Information
 
-  accountStatus: {
-    type: String,
-    enum: ["Active", "Pending", "Inactive"],
-    default: "Pending",
-  },
-  verificationStatus: {
-    type: String,
-    enum: ["Verified", "Not Verified"],
-    default: "Not Verified",
-  },
-
-  // Bank Account Information
-  bankName: String,
-  accountNumber: String,
-  routingNumber: String,
-
-  // Additional Information
-  additionalInformation: String,
-
-  // Business Information
+  // Business Information**********
   businessName: {
     type: String,
   },
@@ -109,16 +71,23 @@ const PartnerSchema = new mongoose.Schema({
     country: String,
   },
 
-  // Contact Information
-  primaryContact: {
-    name: String,
-    phoneNumber: String,
-    email: String,
-  },
   alternativeContact: {
     name: String,
     phoneNumber: String,
-    email: String,
+    // email: String,
+  },
+
+
+  // Additional Information********
+  
+  numberOfEmployees: {
+    type: Number,
+    required: true,
+  },
+
+  yearsOfExperience: {
+    type: Number,
+    required: true,
   },
 
   // Service Details
@@ -127,6 +96,20 @@ const PartnerSchema = new mongoose.Schema({
     required: true,
   },
   serviceAreas: [String],
+
+
+  // Bank Account Information
+  bankName: String,
+  accountNumber: String,
+  routingNumber: String,
+
+
+    // Account Information --- Admin
+  verificationStatus: {
+    type: String,
+    enum: ["Verified", "Not Verified"],
+    default: "Not Verified",
+  },
 
   // Timestamps
   createdAt: {
