@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const PartnerSchema = new mongoose.Schema({
-
   // Personal information********
   firstName: {
     type: String,
@@ -53,7 +52,6 @@ const PartnerSchema = new mongoose.Schema({
     required: true,
   },
 
-
   // Business Information**********
   businessName: {
     type: String,
@@ -77,9 +75,8 @@ const PartnerSchema = new mongoose.Schema({
     // email: String,
   },
 
-
   // Additional Information********
-  
+
   numberOfEmployees: {
     type: Number,
     required: true,
@@ -97,14 +94,12 @@ const PartnerSchema = new mongoose.Schema({
   },
   serviceAreas: [String],
 
-
   // Bank Account Information
   bankName: String,
   accountNumber: String,
   routingNumber: String,
 
-
-    // Account Information --- Admin
+  // Account Information --- Admin
   verificationStatus: {
     type: String,
     enum: ["Verified", "Not Verified"],
