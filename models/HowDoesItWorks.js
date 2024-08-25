@@ -8,6 +8,16 @@ const howDoesItWorksSchema = new mongoose.Schema(
       required: [true, "Content is required"],
       trim: true,
     },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+      trim: true,
+    },
+    icon: {
+      type: String,
+      required: [true, "Icon is required"],
+      trim: true,
+    },
   },
   { timestamps: true }
 );
