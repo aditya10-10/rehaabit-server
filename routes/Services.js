@@ -61,7 +61,7 @@ const {
   createHowDoesItWorks,
   updateHowDoesItWorks,
   deleteHowDoesItWorks,
-  updateHowDoesItWorksIcon,
+  // updateHowDoesItWorksIcon,
   getHowDoesItWorks,
 } = require("../controllers/HowDoesItWorks");
 
@@ -146,12 +146,12 @@ router.delete("/deleteFAQ", auth, isAdmin, deleteFAQ);
 router.post("/createHowDoesItWorks", auth, isAdmin, createHowDoesItWorks);
 router.put("/updateHowDoesItWorks", auth, isAdmin, updateHowDoesItWorks);
 router.delete("/deleteHowDoesItWorks", auth, isAdmin, deleteHowDoesItWorks);
-router.post(
-  "/updateHowDoesItWorksIcon",
-  auth,
-  isAdmin,
-  updateHowDoesItWorksIcon
-);
+// router.post(
+//   "/updateHowDoesItWorksIcon",
+//   auth,
+//   isAdmin,
+//   updateHowDoesItWorksIcon
+// );
 router.get("/getHowDoesItWorks", getHowDoesItWorks);
 
 // ********************************************************************************************************
