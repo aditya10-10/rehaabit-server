@@ -52,72 +52,34 @@ exports.createHowDoesItWorks = async (req, res) => {
   }
 };
 
-// UPDATE HowDoesItWorks Icon
-// UPDATE HowDoesItWorks Icon
-exports.updateHowDoesItWorksIcon = async (req, res) => {
+exports.updateHowDoesItWorks = async (req, res) => {
   try {
-    const { id, serviceId } = req.body; // Assuming the ID of the HowDoesItWorks entry and service ID are provided in the request body
-    const icon = req.files.icon; // Icon file from the request
+    const { id, serviceId, point, description } = req.body;
+    const icon = req.files ? req.files.icon : null; // Check if an icon file is provided
+
+    // console.log(serviceId)
 
     // Validate input
-    if (!id || !serviceId || !icon) {
+    if (!id || !serviceId) {
       return res.status(400).json({
         success: false,
-        message: "ID, service ID, and icon are required",
+        message: "ID and service ID are required",
       });
     }
 
-    // Upload the icon image to Cloudinary
-    const image = await uploadImageToCloudinary(
-      icon,
-      process.env.FOLDER_NAME,
-      1000,
-      1000
-    );
-
-    console.log(image);
-
-    // Update the HowDoesItWorks icon
-    const howDoesItWorks = await HowDoesItWorks.findByIdAndUpdate(
-      id,
-      { icon: image.secure_url },
-      { new: true }
-    );
-
-    if (!howDoesItWorks) {
-      return res
-        .status(404)
-        .json({ success: false, message: "HowDoesItWorks entry not found" });
-    }
-
-    // Populate the service with the updated HowDoesItWorks details
-    const service = await Service.findById(serviceId)
-      .populate("howDoesItWorks")
-      .exec();
-
-    console.log("HowDoesItWorks Icon Updated:", howDoesItWorks);
-    return res.status(200).json({
-      success: true,
-      message: "HowDoesItWorks icon updated successfully",
-      data: service,
-    });
-  } catch (error) {
-    console.error("Error updating HowDoesItWorks icon:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-// UPDATE a HowDoesItWorks
-// UPDATE a HowDoesItWorks
-exports.updateHowDoesItWorks = async (req, res) => {
-  try {
-    const { point, description, serviceId, id } = req.body;
-
     // Prepare the data to be updated
     let updateData = { point, description };
+
+    // If an icon file is provided, upload it and add it to the update data
+    if (icon) {
+      const image = await uploadImageToCloudinary(
+        icon,
+        process.env.FOLDER_NAME,
+        1000,
+        1000
+      );
+      updateData.icon = image.secure_url;
+    }
 
     // Update the HowDoesItWorks entry
     const HowDoesItWorksDetail = await HowDoesItWorks.findByIdAndUpdate(
@@ -152,6 +114,108 @@ exports.updateHowDoesItWorks = async (req, res) => {
     });
   }
 };
+
+
+// UPDATE HowDoesItWorks Icon
+// UPDATE HowDoesItWorks Icon
+// exports.updateHowDoesItWorksIcon = async (req, res) => {
+//   try {
+//     const { id, serviceId } = req.body; // Assuming the ID of the HowDoesItWorks entry and service ID are provided in the request body
+//     const icon = req.files.icon; // Icon file from the request
+
+//     // Validate input
+//     if (!id || !serviceId || !icon) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "ID, service ID, and icon are required",
+//       });
+//     }
+
+//     // Upload the icon image to Cloudinary
+//     const image = await uploadImageToCloudinary(
+//       icon,
+//       process.env.FOLDER_NAME,
+//       1000,
+//       1000
+//     );
+
+//     console.log(image);
+
+//     // Update the HowDoesItWorks icon
+//     const howDoesItWorks = await HowDoesItWorks.findByIdAndUpdate(
+//       id,
+//       { icon: image.secure_url },
+//       { new: true }
+//     );
+
+//     if (!howDoesItWorks) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "HowDoesItWorks entry not found" });
+//     }
+
+//     // Populate the service with the updated HowDoesItWorks details
+//     const service = await Service.findById(serviceId)
+//       .populate("howDoesItWorks")
+//       .exec();
+
+//     console.log("HowDoesItWorks Icon Updated:", howDoesItWorks);
+//     return res.status(200).json({
+//       success: true,
+//       message: "HowDoesItWorks icon updated successfully",
+//       data: service,
+//     });
+//   } catch (error) {
+//     console.error("Error updating HowDoesItWorks icon:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };
+
+// // UPDATE a HowDoesItWorks
+// // UPDATE a HowDoesItWorks
+// exports.updateHowDoesItWorks = async (req, res) => {
+//   try {
+//     const { point, description, serviceId, id } = req.body;
+
+//     // Prepare the data to be updated
+//     let updateData = { point, description };
+
+//     // Update the HowDoesItWorks entry
+//     const HowDoesItWorksDetail = await HowDoesItWorks.findByIdAndUpdate(
+//       id,
+//       updateData,
+//       { new: true }
+//     );
+
+//     if (!HowDoesItWorksDetail) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "HowDoesItWorks not found",
+//       });
+//     }
+
+//     // Populate the service with the updated HowDoesItWorks details
+//     const service = await Service.findById(serviceId)
+//       .populate("howDoesItWorks")
+//       .exec();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "HowDoesItWorks updated successfully",
+//       data: service,
+//     });
+//   } catch (error) {
+//     console.error("Error updating HowDoesItWorks:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // DELETE a HowDoesItWorks
 exports.deleteHowDoesItWorks = async (req, res) => {
