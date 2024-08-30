@@ -6,6 +6,7 @@ const User = require("../models/User");
 const Order = require("../models/Order");
 const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
+const Partner = require("../models/Partner");
 
 // Process Payment and Create Razorpay Order
 // exports.processPayment = async (req, res) => {
@@ -54,7 +55,7 @@ const OrderStatus = require("../models/OrderStatus");
 exports.processPayment = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { singleOrder, isSingleOrder } = req.body;
+    const { singleOrder, isSingleOrder, partnerId } = req.body;
 
     // Find user with cart and addresses
     const user = await User.findById(userId)
@@ -71,6 +72,15 @@ exports.processPayment = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    // Partner
+    const partner = await Partner.findById(partnerId);
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
       });
     }
 
@@ -194,6 +204,7 @@ exports.verifyPayment = async (req, res) => {
       razorpay_signature,
       isSingleOrder,
       singleOrder,
+      partnerId,
     } = req.body;
 
     const userId = req.user.id;
@@ -211,6 +222,15 @@ exports.verifyPayment = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    // Partner
+    const partner = await Partner.findById(partnerId);
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
       });
     }
 
@@ -252,7 +272,7 @@ exports.verifyPayment = async (req, res) => {
     });
     await orderStatus.save();
 
-    console.log(singleOrder);
+    // console.log(singleOrder);
 
     // Create a new order
     const newOrder = new Order({
@@ -287,6 +307,8 @@ exports.verifyPayment = async (req, res) => {
       user.cart.totalCost = 0;
       await user.cart.save();
     }
+
+    user.partner = partner;
 
     // Update user's order list
     user.orders.push(newOrder._id);

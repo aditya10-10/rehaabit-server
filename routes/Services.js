@@ -137,7 +137,7 @@ router.delete("/deleteExclude", auth, isAdmin, deleteExclude);
 // FAQ Controllers
 
 router.post("/createFAQ", auth, isAdmin, createFAQ);
-router.get("/getAllFAQs", auth, isAdmin, getAllFAQs);
+router.get("/getAllFAQs", auth, getAllFAQs);
 router.put("/updateFAQ", auth, isAdmin, updateFAQ);
 router.delete("/deleteFAQ", auth, isAdmin, deleteFAQ);
 

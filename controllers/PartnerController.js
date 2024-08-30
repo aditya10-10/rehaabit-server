@@ -113,3 +113,23 @@ exports.addPartnerInformation = async (req, res) => {
     });
   }
 };
+
+
+// GET all PARTNERS
+exports.getAllPartners = async (req, res) => {
+  try {
+    const partners = await Partner.find();
+
+    res.status(200).json({
+      success: true,
+      data: partners,
+    });
+  } catch (error) {
+    console.error("Error getting Partners:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
