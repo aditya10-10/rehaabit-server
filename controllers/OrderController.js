@@ -250,17 +250,8 @@ exports.getUserOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const ordersWithDetails = await Order.find({})
+    // Fetch all orders and populate related fields
+    const orders = await Order.find({})
       .populate({
         path: "services.serviceId",
         model: "Service",
@@ -269,10 +260,29 @@ exports.getAllOrders = async (req, res) => {
       .populate("status")
       .populate("user");
 
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No orders found",
+      });
+    }
+
+    // Map over the orders and replace the serviceId with the actual service object
+    const ordersWithServiceDetails = orders.map((order) => ({
+      ...order._doc,
+      services: order.services.map((service) => ({
+        ...service._doc,
+        ...service.serviceId._doc, // Include the full service object
+        serviceId: service.serviceId._id, // Keep the serviceId if needed separately
+        serviceName: service.serviceId.serviceName, // Add other details directly
+        serviceDescription: service.serviceId.serviceDescription,
+      })),
+    }));
+
     return res.status(200).json({
       success: true,
       message: "Orders retrieved successfully",
-      data: ordersWithDetails,
+      data: ordersWithServiceDetails,
     });
   } catch (error) {
     console.error("Error getting orders:", error);
@@ -282,3 +292,4 @@ exports.getAllOrders = async (req, res) => {
     });
   }
 };
+

@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     partner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Partner",
-      required: [true, "Partner ID is required"],
+      // required: [true, "Partner ID is required"],
     },
   },
 

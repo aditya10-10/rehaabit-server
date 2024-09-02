@@ -55,7 +55,7 @@ const Partner = require("../models/Partner");
 exports.processPayment = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { singleOrder, isSingleOrder, partnerId } = req.body;
+    const { singleOrder, isSingleOrder } = req.body;
 
     // Find user with cart and addresses
     const user = await User.findById(userId)
@@ -76,13 +76,13 @@ exports.processPayment = async (req, res) => {
     }
 
     // Partner
-    const partner = await Partner.findById(partnerId);
-    if (!partner) {
-      return res.status(404).json({
-        success: false,
-        message: "Partner not found",
-      });
-    }
+    // const partner = await Partner.findById(partnerId);
+    // if (!partner) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Partner not found",
+    //   });
+    // }
 
     // Determine which services to process (from cart or singleOrder)
     const servicesToProcess = isSingleOrder ? singleOrder : user.cart.services;
@@ -204,7 +204,7 @@ exports.verifyPayment = async (req, res) => {
       razorpay_signature,
       isSingleOrder,
       singleOrder,
-      partnerId,
+      // partnerId,
     } = req.body;
 
     const userId = req.user.id;
@@ -226,13 +226,13 @@ exports.verifyPayment = async (req, res) => {
     }
 
     // Partner
-    const partner = await Partner.findById(partnerId);
-    if (!partner) {
-      return res.status(404).json({
-        success: false,
-        message: "Partner not found",
-      });
-    }
+    // const partner = await Partner.findById(partnerId);
+    // if (!partner) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Partner not found",
+    //   });
+    // }
 
     const selectedAddress = user.address.find(
       (addr) => addr.status === "Default"
@@ -308,7 +308,7 @@ exports.verifyPayment = async (req, res) => {
       await user.cart.save();
     }
 
-    user.partner = partner;
+    // user.partner = partner;
 
     // Update user's order list
     user.orders.push(newOrder._id);
