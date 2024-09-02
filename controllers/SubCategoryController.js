@@ -29,7 +29,7 @@ exports.createSubCategory = async (req, res) => {
     const newSubCategory = await SubCategory.create({
       subCategoryName,
       icon: image.secure_url,
-      categoryId
+      categoryId,
     });
 
     // Add the new SubCategory to the Category's content array
@@ -100,7 +100,7 @@ exports.updateSubCategoryName = async (req, res) => {
       success: true,
       message: "SubCategory name updated successfully",
       data: updatedCategory,
-      updatedSubCategory
+      updatedSubCategory,
     });
   } catch (error) {
     console.error("Error updating SubCategory name:", error);
@@ -158,7 +158,7 @@ exports.updateSubCategoryIcon = async (req, res) => {
       success: true,
       message: "SubCategory icon updated successfully",
       data: updatedCategory,
-      updatedSubCategory
+      updatedSubCategory,
     });
   } catch (error) {
     console.error("Error updating SubCategory icon:", error);
@@ -232,7 +232,9 @@ exports.deleteSubCategory = async (req, res) => {
     }
 
     // Delete the SubCategory
-    const deletedSubCategory = await SubCategory.findByIdAndDelete(subCategoryId);
+    const deletedSubCategory = await SubCategory.findByIdAndDelete(
+      subCategoryId
+    );
 
     // Find the updated Category and return
     const updatedCategory = await Category.findById(categoryId)
@@ -243,7 +245,7 @@ exports.deleteSubCategory = async (req, res) => {
       success: true,
       message: "SubCategory deleted successfully",
       data: updatedCategory,
-      deletedSubCategory
+      deletedSubCategory,
     });
   } catch (error) {
     console.error("Error deleting SubCategory:", error);
@@ -317,6 +319,8 @@ exports.getSubCategoriesByCategory = async (req, res) => {
         message: "Category not found",
       });
     }
+
+    console.log("Get Subcategories by Category");
 
     // Return the subcategories of the category
     return res.status(200).json({
