@@ -6,7 +6,7 @@ const router = express.Router();
 const { login, signup, sendOTP } = require("../controllers/AuthController");
 
 const { auth, isAdmin } = require("../middlewares/auth");
-const { getAllUsers } = require("../controllers/UsersController");
+const { getAllUsers, updateUserDetails, deleteUser, createNewUser } = require("../controllers/UsersController");
 
 // Routes for Login, Signup, and Authentication
 
@@ -23,6 +23,9 @@ router.post("/signup", signup);
 router.post("/sendotp", sendOTP);
 
 router.get("/getAllUsers", auth, isAdmin, getAllUsers);
+router.put("/updateUserDetails", auth, isAdmin, updateUserDetails);
+router.delete("/deleteUser", auth, isAdmin, deleteUser);
+router.post("/createNewUser", auth, isAdmin, createNewUser);
 
 // Export the router for use in the main application
 module.exports = router;
