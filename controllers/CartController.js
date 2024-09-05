@@ -114,6 +114,8 @@ exports.updateCart = async (req, res) => {
       cart = await Cart.findById(cart._id);
     }
 
+    console.log(cartServiceId)
+
     const service = cart.services.find(
       (item) => item._id.toString() === cartServiceId
     );
@@ -161,7 +163,9 @@ exports.updateCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
     const { cartServiceId } = req.body;
+    
     const userId = req.user.id;
+
     if (!cartServiceId) {
       return res
         .status(400)

@@ -208,6 +208,10 @@ exports.getUserOrders = async (req, res) => {
         {
           path: "services.serviceId",
           model: "Service",
+          populate: {
+            path: "ratingAndReviews",
+            model: "RatingAndReview",
+          },
         },
         {
           path: "status",
@@ -255,6 +259,10 @@ exports.getAllOrders = async (req, res) => {
       .populate({
         path: "services.serviceId",
         model: "Service",
+        populate: {
+          path: "ratingAndReviews",
+          model: "RatingAndReview",
+        },
       })
       .populate("address")
       .populate("status")
@@ -292,4 +300,3 @@ exports.getAllOrders = async (req, res) => {
     });
   }
 };
-

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Cart = require("../models/Cart");
 const Profile = require("../models/Profile");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
@@ -14,10 +15,34 @@ const validatePhoneNumber = (contactNumber) => {
   return phoneUtil.format(phoneNumber, PNF.E164);
 };
 
+const CartPopulate = async (cartId) => {
+  const populatedCart = await Cart.findById(cartId).populate({
+    path: "services.serviceId",
+    model: "Service",
+  });
+
+  const servicesWithDetails = populatedCart.services.map((service) => ({
+    ...service.serviceId._doc,
+    serviceId: service.serviceId._id,
+    qty: service.qty,
+    price: service.price,
+    _id: service._id,
+  }));
+
+  const cartWithDetails = {
+    ...populatedCart._doc,
+    services: servicesWithDetails,
+  };
+
+  return cartWithDetails;
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
       .populate("address")
+      .populate("cart")
+      .populate("orders")
       .populate("additionalDetails");
 
     if (!users || users.length === 0) {
@@ -34,6 +59,42 @@ exports.getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.getUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    let user = await User.findById(userId)
+      .populate("address")
+      .populate("cart")
+      .populate("orders")
+      .populate("additionalDetails");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.cart) {
+      user = user.toObject();
+      user.cart = await CartPopulate(user.cart._id.toString());
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error getting user:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -90,6 +151,8 @@ exports.updateUserDetails = async (req, res) => {
     const userWithDetails = await User.findById(userDetails._id)
       .populate("address")
       .populate("additionalDetails")
+      .populate("cart")
+      .populate("orders")
       .exec();
 
     return res.status(200).json({
@@ -138,13 +201,48 @@ exports.deleteUser = async (req, res) => {
 
 exports.createNewUser = async (req, res) => {
   try {
-    const { firstName, lastName, contactNumber, accountType } = req.body;
+    const { firstName, lastName, email, contactNumber, accountType } = req.body;
 
+    if (typeof contactNumber === "number") {
+      contactNumber = contactNumber.toString();
+    }
+
+    const formattedPhoneNumber = validatePhoneNumber(contactNumber);
+
+    let user = await User.findOne({ contactNumber: formattedPhoneNumber });
+    if (!user) {
+      // Create the Additional Profile For User
+      const profileDetails = await Profile.create({
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        contactNumber: formattedPhoneNumber,
+      });
+
+      user = await User.create({
+        contactNumber: formattedPhoneNumber,
+        accountType,
+        additionalDetails: profileDetails._id,
+        image: "",
+      });
+
+      const userWithDetails = await User.findById(user._id)
+        .populate("address")
+        .populate("additionalDetails")
+        .populate("cart")
+        .populate("orders")
+        .exec();
+
+      return res.status(200).json({
+        success: true,
+        message: "New User created successfully",
+        data: userWithDetails,
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      message: "New User created successfully",
-      data: userId,
+      message: "User already exists",
     });
   } catch (error) {
     console.error("Error creating new user:", error);

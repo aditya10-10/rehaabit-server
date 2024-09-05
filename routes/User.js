@@ -6,7 +6,13 @@ const router = express.Router();
 const { login, signup, sendOTP } = require("../controllers/AuthController");
 
 const { auth, isAdmin } = require("../middlewares/auth");
-const { getAllUsers, updateUserDetails, deleteUser, createNewUser } = require("../controllers/UsersController");
+const {
+  getAllUsers,
+  getUser,
+  updateUserDetails,
+  deleteUser,
+  createNewUser,
+} = require("../controllers/UsersController");
 
 // Routes for Login, Signup, and Authentication
 
@@ -23,6 +29,7 @@ router.post("/signup", signup);
 router.post("/sendotp", sendOTP);
 
 router.get("/getAllUsers", auth, isAdmin, getAllUsers);
+router.post("/getUser", auth, isAdmin, getUser);
 router.put("/updateUserDetails", auth, isAdmin, updateUserDetails);
 router.delete("/deleteUser", auth, isAdmin, deleteUser);
 router.post("/createNewUser", auth, isAdmin, createNewUser);
