@@ -13,7 +13,7 @@ const ratingAndReviewSchema = new mongoose.Schema({
   },
   review: {
     type: String,
-    required: true,
+    // required: true,
   },
   service: {
     type: mongoose.Schema.Types.ObjectId,

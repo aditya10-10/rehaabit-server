@@ -10,15 +10,10 @@ const {
   updateCartFromLocalStorage,
 } = require("../controllers/CartController");
 
-router.post("/addToCart", auth, isUser, addToCart);
-router.put("/updateCart", auth, isUser, updateCart);
-router.delete("/removeFromCart", auth, isUser, removeFromCart);
+router.post("/addToCart", auth, addToCart);
+router.put("/updateCart", auth, updateCart);
+router.delete("/removeFromCart", auth, removeFromCart);
 router.get("/getAllCartServices", auth, getAllCartServices);
-router.put(
-  "/updateCartFromLocalStorage",
-  auth,
-  isUser,
-  updateCartFromLocalStorage
-);
+router.put("/updateCartFromLocalStorage", auth, updateCartFromLocalStorage);
 
 module.exports = router;

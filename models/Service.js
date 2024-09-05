@@ -16,7 +16,7 @@ const servicesSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: true,
+    // required: true,
   },
   thumbnail: {
     type: String,
@@ -54,6 +54,9 @@ const servicesSchema = new mongoose.Schema({
       ref: "RatingAndReview",
     },
   ],
+  avgRating: {
+    type: String,
+  },
   status: {
     type: String,
     enum: ["Draft", "Published"],
