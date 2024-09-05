@@ -54,6 +54,9 @@ const servicesSchema = new mongoose.Schema({
       ref: "RatingAndReview",
     },
   ],
+  avgRating: {
+    type: String,
+  },
   status: {
     type: String,
     enum: ["Draft", "Published"],

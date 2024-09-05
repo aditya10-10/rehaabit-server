@@ -6,37 +6,30 @@ const { mongo, default: mongoose } = require("mongoose");
 exports.createRating = async (req, res) => {
   try {
     const { rating, review, serviceId } = req.body;
-
-    // console.log(rating, review, serviceId);
-
     const userId = req.user.id;
 
-    const serviceDetails = await Service.findOne({
-      _id: serviceId,
-      // order: { $elemMatch: { $eq: userId } },
-    });
-
-    // console.log(serviceDetails);
-
+    // Find the service by ID
+    const serviceDetails = await Service.findById(serviceId);
     if (!serviceDetails) {
       return res.status(404).json({
         success: false,
         message: "Service not found",
       });
     }
-    //check if user already reviewed the course
+
+    // Check if the user already reviewed the service
     const alreadyReviewed = await RatingAndReview.findOne({
       user: userId,
       service: serviceId,
     });
-
     if (alreadyReviewed) {
       return res.status(403).json({
         success: false,
         message: "Service is already reviewed by the user",
       });
     }
-    //create rating and review
+
+    // Create a new rating and review
     const ratingReview = await RatingAndReview.create({
       rating,
       review,
@@ -44,31 +37,37 @@ exports.createRating = async (req, res) => {
       user: userId,
     });
 
-    //update service with this rating/review
+    // Push the new rating and review to the service's ratingAndReviews array
     const updatedServiceDetails = await Service.findByIdAndUpdate(
       { _id: serviceId },
-      {
-        $push: {
-          ratingAndReviews: ratingReview._id,
-        },
-      },
+      { $push: { ratingAndReviews: ratingReview._id } },
       { new: true }
     );
-    console.log(updatedServiceDetails);
-    //return response
+
+    // Calculate the new average rating
+    const allRatings = await RatingAndReview.find({ service: serviceId });
+    const totalRating = allRatings.reduce((sum, review) => sum + review.rating, 0);
+    const avgRating = (totalRating / allRatings.length).toFixed(1);
+
+    // Update the avgRating of the service
+    updatedServiceDetails.avgRating = avgRating;
+    await updatedServiceDetails.save();
+
+    // Return success response
     return res.status(200).json({
       success: true,
       message: "Rating and Review created Successfully",
       data: ratingReview,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 
 //getAverageRating
 exports.getAverageRating = async (req, res) => {
