@@ -61,6 +61,10 @@ const servicesSchema = new mongoose.Schema({
     type: String,
     enum: ["Draft", "Published"],
   },
+  priceStatus: {
+    type: String,
+    enum: ["priced", "non-priced"],
+  },
   categoryId: { type: String, required: true },
   subCategoryId: { type: String, required: true },
   createdAt: {

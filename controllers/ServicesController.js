@@ -19,6 +19,7 @@ exports.createService = async (req, res) => {
       price,
       warranty,
       status,
+      priceStatus
     } = req.body;
 
     const thumbnail = req.files.thumbnail;
@@ -42,6 +43,10 @@ exports.createService = async (req, res) => {
       status = "Draft";
     }
 
+    if (!priceStatus || priceStatus === undefined) {
+      priceStatus = "priced";
+    }
+
     const thumbnailImage = await uploadImageToCloudinary(
       thumbnail,
       process.env.FOLDER_NAME
@@ -57,6 +62,7 @@ exports.createService = async (req, res) => {
       price,
       warranty,
       status,
+      priceStatus,
       thumbnail: thumbnailImage.secure_url,
       categoryId,
       subCategoryId,
@@ -103,6 +109,7 @@ exports.editService = async (req, res) => {
       price,
       warranty,
       status,
+      priceStatus
     } = req.body;
 
     const thumbnail = req.files ? req.files.thumbnail : null;
@@ -122,6 +129,7 @@ exports.editService = async (req, res) => {
       price,
       warranty,
       status,
+      priceStatus
     };
 
     if (thumbnail) {
