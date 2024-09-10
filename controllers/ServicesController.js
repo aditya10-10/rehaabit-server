@@ -19,7 +19,7 @@ exports.createService = async (req, res) => {
       price,
       warranty,
       status,
-      priceStatus
+      priceStatus,
     } = req.body;
 
     const thumbnail = req.files.thumbnail;
@@ -109,7 +109,7 @@ exports.editService = async (req, res) => {
       price,
       warranty,
       status,
-      priceStatus
+      priceStatus,
     } = req.body;
 
     const thumbnail = req.files ? req.files.thumbnail : null;
@@ -129,7 +129,7 @@ exports.editService = async (req, res) => {
       price,
       warranty,
       status,
-      priceStatus
+      priceStatus,
     };
 
     if (thumbnail) {
@@ -270,7 +270,7 @@ exports.deleteService = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Service deleted successfully",
-      data: deletedService
+      data: deletedService,
     });
   } catch (error) {
     console.error("Error deleting service:", error);
@@ -326,7 +326,84 @@ exports.getFullServiceDetails = async (req, res) => {
 exports.getAllServices = async (req, res) => {
   try {
     // Fetch all services from the database
-    const allServices = await Service.find({}).populate([
+    const allServices = await Service.find({ status: "Published" }).populate([
+      {
+        path: "howDoesItWorks",
+      },
+      {
+        path: "includes",
+      },
+      {
+        path: "excludes",
+      },
+      {
+        path: "faqs",
+      },
+      {
+        path: "ratingAndReviews",
+      },
+    ]);
+
+    // Return the fetched services
+    return res.status(200).json({
+      success: true,
+      data: allServices,
+    });
+  } catch (error) {
+    console.error("Error fetching all services:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// Get the services for the published service
+exports.getAllPublishedServices = async (req, res) => {
+  try {
+    // Fetch all published services
+    const allServices = await Service.find({ status: "Published" }).populate([
+      {
+        path: "howDoesItWorks",
+      },
+      {
+        path: "includes",
+      },
+      {
+        path: "excludes",
+      },
+      {
+        path: "faqs",
+      },
+      {
+        path: "ratingAndReviews",
+      },
+    ]);
+
+    // Return the fetched services
+    return res.status(200).json({
+      success: true,
+      data: allServices,
+    });
+  } catch (error) {
+    console.error("Error fetching all services:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// Get services by no priced and published
+exports.getAllNoPricedPublishedServices = async (req, res) => {
+  try {
+    // Fetch all published services without pricing
+    const allServices = await Service.find({
+      status: "Published",
+      price: 0,
+    }).populate([
       {
         path: "howDoesItWorks",
       },

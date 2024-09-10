@@ -11,6 +11,8 @@ const {
   deleteService,
   getFullServiceDetails,
   getAllServices,
+  getAllPublishedServices,
+  getAllNoPricedPublishedServices,
 } = require("../controllers/ServicesController");
 
 // Categories Controllers Import
@@ -117,6 +119,10 @@ router.delete("/deleteService", auth, isAdmin, deleteService);
 router.post("/getFullServiceDetails", getFullServiceDetails);
 
 router.get("/getAllServices", getAllServices);
+
+router.get("/getAllPublishedServices", getAllPublishedServices);
+
+router.get("/getAllNoPricedPublishedServices", getAllNoPricedPublishedServices);
 
 // ********************************************************************************************************
 //                                      Include, Exclude, FAQ, HowDoesItWorks routes
