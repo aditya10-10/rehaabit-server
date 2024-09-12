@@ -21,6 +21,10 @@ const ratingAndReviewSchema = new mongoose.Schema({
     ref: "Service",
     index: true,
   },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Export the RatingAndReview model

@@ -46,7 +46,10 @@ exports.createRating = async (req, res) => {
 
     // Calculate the new average rating
     const allRatings = await RatingAndReview.find({ service: serviceId });
-    const totalRating = allRatings.reduce((sum, review) => sum + review.rating, 0);
+    const totalRating = allRatings.reduce(
+      (sum, review) => sum + review.rating,
+      0
+    );
     const avgRating = (totalRating / allRatings.length).toFixed(1);
 
     // Update the avgRating of the service
@@ -67,7 +70,6 @@ exports.createRating = async (req, res) => {
     });
   }
 };
-
 
 //getAverageRating
 exports.getAverageRating = async (req, res) => {
@@ -176,6 +178,73 @@ exports.getUsersRatingAndReviews = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// getAllRatingsAndReviewsWithUserNames
+exports.getAllRatingsAndReviewsWithUserNames = async (req, res) => {
+  try {
+    const allReviews = await RatingAndReview.find().populate({
+      path: "user",
+      select: "firstName lastName",
+      model: "User",
+      populate: {
+        path: "additionalDetails",
+        select: "firstName lastName",
+        model: "Profile",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All reviews with user names fetched successfully",
+      data: allReviews,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// getRatingsAndReviewsForService
+exports.getRatingsAndReviewsForService = async (req, res) => {
+  try {
+    // Get the service ID from request parameters
+    const { serviceId } = req.params;
+
+    // Check if the service exists
+    const serviceDetails = await Service.findById(serviceId);
+    if (!serviceDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // Fetch all ratings and reviews for the particular service
+    const reviews = await RatingAndReview.find({ service: serviceId })
+      .populate({
+        path: "user",
+        select: "firstName lastName",
+        model: "User",
+      })
+      .sort({ createdAt: "desc" }); // Optional: Sort reviews by latest first
+
+    // Return the reviews in the response
+    return res.status(200).json({
+      success: true,
+      message: "Ratings and reviews fetched successfully",
+      data: reviews,
+    });
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: error.message,
