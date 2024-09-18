@@ -1,9 +1,10 @@
-const Contact = require('../models/Contact');
+const Contact = require("../models/Contact");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
 
 exports.contactUsController = async (req, res) => {
-  const { firstName, lastName, email, phoneNumber, subject, message } = req.body;
+  const { firstName, lastName, email, phoneNumber, subject, message } =
+    req.body;
 
   try {
     // Save contact form data to the database
@@ -36,5 +37,15 @@ exports.contactUsController = async (req, res) => {
       success: false,
       message: "Something went wrong...",
     });
+  }
+};
+
+// Controller to get all contact data from the database
+exports.getAllContactsController = async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    res.status(200).json({ success: true, data: contacts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

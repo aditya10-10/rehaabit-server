@@ -298,8 +298,20 @@ exports.getFullServiceDetails = async (req, res) => {
       .populate("howDoesItWorks")
       .populate("includes")
       .populate("excludes")
-      .populate("faqs");
-    // .populate("ratingAndReviews");
+      .populate("faqs")
+      .populate({
+        path: "ratingAndReviews",
+        populate: {
+          path: "user",
+          select: "firstName lastName",
+          model: "User",
+          populate: {
+            path: "additionalDetails",
+            select: "firstName lastName",
+            model: "Profile",
+          },
+        },
+      });
 
     if (!service) {
       return res.status(404).json({
@@ -326,7 +338,7 @@ exports.getFullServiceDetails = async (req, res) => {
 exports.getAllServices = async (req, res) => {
   try {
     // Fetch all services from the database
-    const allServices = await Service.find({ status: "Published" }).populate([
+    const allServices = await Service.find({}).populate([
       {
         path: "howDoesItWorks",
       },
@@ -341,6 +353,16 @@ exports.getAllServices = async (req, res) => {
       },
       {
         path: "ratingAndReviews",
+        populate: {
+          path: "user",
+          select: "firstName lastName",
+          model: "User",
+          populate: {
+            path: "additionalDetails",
+            select: "firstName lastName",
+            model: "Profile",
+          },
+        },
       },
     ]);
 
