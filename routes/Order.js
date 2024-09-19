@@ -5,7 +5,7 @@ const {
   placeOrder,
   purchaseService,
   getUserOrders,
-  getAllOrders
+  getAllOrders,
 } = require("../controllers/OrderController");
 
 router.post("/placeOrder", auth, isUser, placeOrder);

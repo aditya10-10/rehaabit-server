@@ -278,13 +278,23 @@ exports.getAllOrders = async (req, res) => {
     // Map over the orders and replace the serviceId with the actual service object
     const ordersWithServiceDetails = orders.map((order) => ({
       ...order._doc,
-      services: order.services.map((service) => ({
-        ...service._doc,
-        ...service.serviceId._doc, // Include the full service object
-        serviceId: service.serviceId._id, // Keep the serviceId if needed separately
-        serviceName: service.serviceId.serviceName, // Add other details directly
-        serviceDescription: service.serviceId.serviceDescription,
-      })),
+      services: order.services.map((service) => {
+        if (!service.serviceId) {
+          return {
+            ...service._doc,
+            serviceId: null,
+            serviceName: null,
+            serviceDescription: null,
+          };
+        }
+        return {
+          ...service._doc,
+          ...service.serviceId._doc, // Include the full service object
+          serviceId: service.serviceId._id, // Keep the serviceId if needed separately
+          serviceName: service.serviceId.serviceName, // Add other details directly
+          serviceDescription: service.serviceId.serviceDescription,
+        };
+      }),
     }));
 
     return res.status(200).json({
