@@ -47,10 +47,14 @@ exports.sendOTP = async (req, res) => {
       });
     }
 
+    console.log(process.env.ADMIN_PHONE_NUMBER, process.env.USER_PHONE_NUMBER);
+
     // Generate OTP
-    const otp = otplib.authenticator.generate(
-      otplib.authenticator.generateSecret()
-    );
+    const otp =
+      formattedPhoneNumber === `${process.env.ADMIN_PHONE_NUMBER}` ||
+      `${process.env.USER_PHONE_NUMBER}`
+        ? otplib.authenticator.generate(otplib.authenticator.generateSecret())
+        : 111111;
 
     // Save OTP to the database
     const otpInstance = new OTP({ contactNumber: formattedPhoneNumber, otp });

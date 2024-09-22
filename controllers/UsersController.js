@@ -252,3 +252,16 @@ exports.createNewUser = async (req, res) => {
     });
   }
 };
+
+// New method to get the total user count
+// UsersController.js
+exports.getUserCount = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    // console.log(totalUsers);
+    res.json({ totalUsers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching user count" });
+  }
+};

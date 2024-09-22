@@ -37,31 +37,31 @@ exports.addPartnerInformation = async (req, res) => {
       ? JSON.parse(alternativeContact)
       : {};
 
-      let servicesOfferedArray = [];
-      let serviceAreasArray = [];
-  
-      if (typeof servicesOffered === 'string') {
-        try {
-          servicesOfferedArray = JSON.parse(servicesOffered);
-        } catch (e) {
-          console.error("Failed to parse servicesOffered:", e);
-        }
-      } else if (Array.isArray(servicesOffered)) {
-        servicesOfferedArray = servicesOffered;
+    let servicesOfferedArray = [];
+    let serviceAreasArray = [];
+
+    if (typeof servicesOffered === "string") {
+      try {
+        servicesOfferedArray = JSON.parse(servicesOffered);
+      } catch (e) {
+        console.error("Failed to parse servicesOffered:", e);
       }
-  
-      if (typeof serviceAreas === 'string') {
-        try {
-          serviceAreasArray = JSON.parse(serviceAreas);
-        } catch (e) {
-          console.error("Failed to parse serviceAreas:", e);
-        }
-      } else if (Array.isArray(serviceAreas)) {
-        serviceAreasArray = serviceAreas;
+    } else if (Array.isArray(servicesOffered)) {
+      servicesOfferedArray = servicesOffered;
+    }
+
+    if (typeof serviceAreas === "string") {
+      try {
+        serviceAreasArray = JSON.parse(serviceAreas);
+      } catch (e) {
+        console.error("Failed to parse serviceAreas:", e);
       }
-  
-      // console.log("Parsed servicesOfferedArray:", servicesOfferedArray);
-      // console.log("Parsed serviceAreasArray:", serviceAreasArray);
+    } else if (Array.isArray(serviceAreas)) {
+      serviceAreasArray = serviceAreas;
+    }
+
+    // console.log("Parsed servicesOfferedArray:", servicesOfferedArray);
+    // console.log("Parsed serviceAreasArray:", serviceAreasArray);
 
     const image = await uploadImageToCloudinary(
       photo,
@@ -114,6 +114,24 @@ exports.addPartnerInformation = async (req, res) => {
   }
 };
 
+// GET all PARTNERS
+exports.getAllPartners = async (req, res) => {
+  try {
+    const partners = await Partner.find();
+
+    res.status(200).json({
+      success: true,
+      data: partners,
+    });
+  } catch (error) {
+    console.error("Error getting Partners:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 // GET all PARTNERS
 exports.getAllPartners = async (req, res) => {
@@ -131,5 +149,16 @@ exports.getAllPartners = async (req, res) => {
       message: "Internal server error",
       error: error.message,
     });
+  }
+};
+
+// GET PARTNER COUNT
+exports.getPartnerCount = async (req, res) => {
+  try {
+    const totalPartners = await Partner.countDocuments();
+    res.json({ totalPartners });
+  } catch (error) {
+    console.error("Error fetching partner count:", error);
+    res.status(500).json({ message: "Error fetching partner count" });
   }
 };

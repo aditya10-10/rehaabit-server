@@ -251,3 +251,38 @@ exports.getRatingsAndReviewsForService = async (req, res) => {
     });
   }
 };
+
+// Fetch all ratings and calculate average rating
+exports.getAllRatingsAndAverage = async (req, res) => {
+  try {
+    // Fetch all ratings from the database
+    const ratings = await RatingAndReview.find();
+
+    // Calculate the total number of ratings
+    const totalRatings = ratings.length;
+
+    // Calculate the sum of all ratings
+    const sumOfRatings = ratings.reduce(
+      (sum, rating) => sum + rating.rating,
+      0
+    ); // Assuming 'rating' is the field for the rating value
+
+    // Calculate the average rating
+    const averageRating = totalRatings > 0 ? sumOfRatings / totalRatings : 0;
+
+    console.log("Total Ratings:", averageRating);
+    // Return the result
+    res.json({
+      success: true,
+      averageRating,
+      totalRatings,
+      ratings,
+    });
+  } catch (error) {
+    console.error("Error fetching ratings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching ratings",
+    });
+  }
+};

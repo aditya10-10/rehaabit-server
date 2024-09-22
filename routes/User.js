@@ -12,6 +12,7 @@ const {
   updateUserDetails,
   deleteUser,
   createNewUser,
+  getUserCount,
 } = require("../controllers/UsersController");
 
 // Routes for Login, Signup, and Authentication
@@ -33,6 +34,7 @@ router.post("/getUser", auth, isAdmin, getUser);
 router.put("/updateUserDetails", auth, isAdmin, updateUserDetails);
 router.delete("/deleteUser", auth, isAdmin, deleteUser);
 router.post("/createNewUser", auth, isAdmin, createNewUser);
+router.get("/getUserCount", auth, isAdmin, getUserCount);
 
 // Export the router for use in the main application
 module.exports = router;

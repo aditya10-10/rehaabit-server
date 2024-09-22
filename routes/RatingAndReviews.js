@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { auth } = require("../middlewares/auth");
+const { auth, isAdmin } = require("../middlewares/auth");
 const {
   createRating,
   getAverageRating,
   getAllRating,
   getUsersRatingAndReviews,
   getAllRatingsAndReviewsWithUserNames,
+  getAllRatingsAndAverage,
 } = require("../controllers/RatingAndReviews");
 
 router.post("/createRating", auth, createRating);
@@ -17,5 +18,6 @@ router.get(
   getAllRatingsAndReviewsWithUserNames
 );
 router.get("/getUsersRatingAndReviews", auth, getUsersRatingAndReviews);
+router.get("/getAllRatingsAndAverage", auth, isAdmin, getAllRatingsAndAverage);
 
 module.exports = router;
