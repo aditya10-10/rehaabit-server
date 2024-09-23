@@ -268,7 +268,7 @@ exports.verifyPayment = async (req, res) => {
 
     // Create a new order status
     const orderStatus = new OrderStatus({
-      status: "placed",
+      status: "pending",
     });
     await orderStatus.save();
 

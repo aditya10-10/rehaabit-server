@@ -1,8 +1,9 @@
 const RatingAndReview = require("../models/RatingAndReviews");
 const Service = require("../models/Service");
+const OrderStatus = require("../models/OrderStatus");
 const { mongo, default: mongoose } = require("mongoose");
 
-//createRating
+// createRating
 exports.createRating = async (req, res) => {
   try {
     const { rating, review, serviceId } = req.body;
@@ -71,13 +72,13 @@ exports.createRating = async (req, res) => {
   }
 };
 
-//getAverageRating
+// getAverageRating
 exports.getAverageRating = async (req, res) => {
   try {
-    //get course ID
+    // get service ID
     const { serviceId } = req.body;
-    //calculate avg rating
 
+    // calculate avg rating
     const result = await RatingAndReview.aggregate([
       {
         $match: {
@@ -92,7 +93,7 @@ exports.getAverageRating = async (req, res) => {
       },
     ]);
 
-    //return rating
+    // return rating
     if (result.length > 0) {
       return res.status(200).json({
         success: true,
@@ -100,7 +101,7 @@ exports.getAverageRating = async (req, res) => {
       });
     }
 
-    //if no rating/Review exist
+    // if no rating/Review exist
     return res.status(200).json({
       success: true,
       message: "Average Rating is 0, no ratings given till now",
@@ -115,8 +116,7 @@ exports.getAverageRating = async (req, res) => {
   }
 };
 
-//getAllRatingAndReviews
-
+// getAllRating
 exports.getAllRating = async (req, res) => {
   try {
     const allReviews = await RatingAndReview.find({});
@@ -135,36 +135,7 @@ exports.getAllRating = async (req, res) => {
   }
 };
 
-// //getAllRatingAndReviews
-
-// exports.getAllRating = async (req, res) => {
-//   try {
-//     const allReviews = await RatingAndReview.find({})
-//       .sort({ rating: "desc" })
-//       .populate({
-//         path: "user",
-//         select: "firstName lastName email image",
-//       })
-//       .populate({
-//         path: "service",
-//         select: "serviceName",
-//       })
-//       .exec();
-//     return res.status(200).json({
-//       success: true,
-//       message: "All reviews fetched successfully",
-//       data: allReviews,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
-//getUsersRatingAndReviews
+// getUsersRatingAndReviews
 exports.getUsersRatingAndReviews = async (req, res) => {
   try {
     const userId = req.user.id;

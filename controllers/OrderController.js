@@ -57,14 +57,9 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    // Calculate the total cost from the cart (this might already be in the cart object)
-    // const totalCost = cart.services.reduce((acc, service) => {
-    //   return acc + service.qty * service.price;
-    // }, 0);
-
     // Create a new order status
     const orderStatus = new OrderStatus({
-      status: "placed",
+      status: "pending",
     });
     await orderStatus.save();
 
@@ -149,7 +144,7 @@ exports.purchaseService = async (req, res) => {
     }
 
     const orderStatus = new OrderStatus({
-      status: "placed",
+      status: "pending",
     });
     await orderStatus.save();
 
@@ -304,6 +299,41 @@ exports.getAllOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.getRevenue = async (req, res) => {
+  try {
+    // Fetch all orders from the database
+    const orders = await Order.find({});
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No orders found",
+      });
+    }
+
+    // Calculate the total revenue by summing up the totalCost of all orders
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + order.totalCost,
+      0
+    );
+
+    // Return the total revenue to the admin dashboard
+    return res.status(200).json({
+      success: true,
+      message: "Total revenue calculated successfully",
+      data: {
+        totalRevenue,
+      },
+    });
+  } catch (error) {
+    console.error("Error calculating total revenue:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

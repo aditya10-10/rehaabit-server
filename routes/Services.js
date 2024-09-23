@@ -13,6 +13,7 @@ const {
   getAllServices,
   getAllPublishedServices,
   getAllNoPricedPublishedServices,
+  getTotalServicesCount,
 } = require("../controllers/ServicesController");
 
 // Categories Controllers Import
@@ -123,6 +124,8 @@ router.get("/getAllServices", getAllServices);
 router.get("/getAllPublishedServices", getAllPublishedServices);
 
 router.get("/getAllNoPricedPublishedServices", getAllNoPricedPublishedServices);
+
+router.get("/getTotalServicesCount", auth, isAdmin, getTotalServicesCount);
 
 // ********************************************************************************************************
 //                                      Include, Exclude, FAQ, HowDoesItWorks routes

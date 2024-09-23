@@ -457,3 +457,24 @@ exports.getAllNoPricedPublishedServices = async (req, res) => {
     });
   }
 };
+
+// GET total number of services in the database
+exports.getTotalServicesCount = async (req, res) => {
+  try {
+    // Get the total count of services
+    const totalServicesCount = await Service.countDocuments();
+
+    // Return the total count
+    return res.status(200).json({
+      success: true,
+      totalServices: totalServicesCount,
+    });
+  } catch (error) {
+    console.error("Error fetching total services count:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
