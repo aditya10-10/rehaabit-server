@@ -82,7 +82,8 @@ exports.updateAddress = async (req, res) => {
     const userId = req.user.id;
 
     const addressToUpdate = await Address.findOne({ _id: addressId, user: userId });
-
+     console.log(addressToUpdate);
+     console.log(status);
     if (!addressToUpdate) {
       return res.status(404).json({
         success: false,
@@ -103,12 +104,11 @@ exports.updateAddress = async (req, res) => {
 
     if (status === "Default") {
       await Address.updateMany(
-        { user: userId, status: "Default" },
-        { status: "" }
+          { user: userId, status: "Default" },
+          { $set: { status: "" } }
       );
       addressToUpdate.status = "Default";
-    }
-
+  }
     await addressToUpdate.save();
 
     return res.status(200).json({
