@@ -340,3 +340,34 @@ exports.getRevenue = async (req, res) => {
     });
   }
 };
+
+exports.getPendingOrdersCount = async (req, res) => {
+  try{
+    const orders = await Order.find({})
+    .populate({
+      path:"status",
+      model:"OrderStatus"
+    });
+    const pendingOrders = orders.filter(order=>order.status.status === "pending");
+    if(!pendingOrders || pendingOrders.length === 0){
+      return res.status(404).json({
+        success: false,
+        message: "No pending orders found"
+      })
+    }
+    const count=pendingOrders.length;
+    return res.status(200).json({
+      success: true,
+      message: "Pending orders retrieved successfully",
+      data:count
+    })
+  }
+  catch(error){
+    console.error("Error getting pending orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
