@@ -342,27 +342,27 @@ exports.getRevenue = async (req, res) => {
 };
 
 exports.getPendingOrdersCount = async (req, res) => {
-  try{
+  try {
     const orders = await Order.find({})
-    .populate({
-      path:"status",
-      model:"OrderStatus"
-    });
-    const pendingOrders = orders.filter(order=>order.status.status === "pending");
-    if(!pendingOrders || pendingOrders.length === 0){
+      .populate({
+        path: "status",
+        model: "OrderStatus"
+      });
+    const pendingOrders = orders.filter(order => order.status.status === "pending");
+    if (!pendingOrders || pendingOrders.length === 0) {
       return res.status(404).json({
         success: false,
         message: "No pending orders found"
       })
     }
-    const count=pendingOrders.length;
+    const count = pendingOrders.length;
     return res.status(200).json({
       success: true,
       message: "Pending orders retrieved successfully",
-      data:count
+      data: count
     })
   }
-  catch(error){
+  catch (error) {
     console.error("Error getting pending orders:", error);
     return res.status(500).json({
       success: false,
@@ -371,3 +371,39 @@ exports.getPendingOrdersCount = async (req, res) => {
   }
 }
 
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    if (!orderId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID and status are required",
+      });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+    const orderStatus = await OrderStatus.findById(order.status);
+    if (!orderStatus) {
+      return res.status(404).json({ success: false, message: "Order status not found" });
+    }
+    orderStatus.status = status; 
+    await orderStatus.save(); 
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: order,
+    });
+  }
+  catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}

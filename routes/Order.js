@@ -7,14 +7,17 @@ const {
   getUserOrders,
   getAllOrders,
   getRevenue,
-  getPendingOrdersCount
+  getPendingOrdersCount,
+  updateOrderStatus
 } = require("../controllers/OrderController");
 
 router.post("/placeOrder", auth, isUser, placeOrder);
+router.post("/updateorderstatus", auth, isAdmin, updateOrderStatus);
 router.post("/purchaseService", auth, isUser, purchaseService);
 router.get("/getUserOrders", auth, isUser, getUserOrders);
 router.get("/getAllOrders", auth, isAdmin, getAllOrders);
 router.get("/getRevenue", auth, isAdmin, getRevenue);
 router.get("/getPendingOrdersCount", auth, isAdmin, getPendingOrdersCount);
+
 
 module.exports = router;
