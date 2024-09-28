@@ -342,32 +342,104 @@ exports.getRevenue = async (req, res) => {
 };
 
 exports.getPendingOrdersCount = async (req, res) => {
-  try{
-    const orders = await Order.find({})
-    .populate({
-      path:"status",
-      model:"OrderStatus"
+  try {
+    const orders = await Order.find({}).populate({
+      path: "status",
+      model: "OrderStatus",
     });
-    const pendingOrders = orders.filter(order=>order.status.status === "pending");
-    if(!pendingOrders || pendingOrders.length === 0){
+    const pendingOrders = orders.filter(
+      (order) => order.status.status === "pending"
+    );
+    if (!pendingOrders || pendingOrders.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No pending orders found"
-      })
+        message: "No pending orders found",
+      });
     }
-    const count=pendingOrders.length;
+    const count = pendingOrders.length;
     return res.status(200).json({
       success: true,
       message: "Pending orders retrieved successfully",
-      data:count
-    })
-  }
-  catch(error){
+      data: count,
+    });
+  } catch (error) {
     console.error("Error getting pending orders:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
-}
+};
 
+// Controller to change order status by admin
+exports.changeOrderStatus = async (req, res) => {
+  try {
+    const { orderId, newStatus } = req.body;
+
+    // Validate request body
+    if (!orderId || !newStatus) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID and new status are required",
+      });
+    }
+
+    // Check if the provided status is valid
+    const allowedStatuses = [
+      "pending",
+      "confirmed",
+      "professional assigned",
+      "on the way",
+      "service started",
+      "service completed",
+      "payment pending",
+      "paid",
+      "cancelled by customer",
+      "cancelled by provider",
+      "rescheduled",
+      "refund initiated",
+      "refund completed",
+    ];
+
+    if (!allowedStatuses.includes(newStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order status",
+      });
+    }
+
+    // Find the order by ID
+    const order = await Order.findById(orderId).populate("status");
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Update the order's status
+    const orderStatus = await OrderStatus.findById(order.status._id);
+    orderStatus.status = newStatus;
+    orderStatus.updatedAt = Date.now(); // Update the timestamp for the status change
+
+    // Save the updated status
+    await orderStatus.save();
+
+    // Return the updated order details
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: {
+        orderId: order._id,
+        newStatus: orderStatus.status,
+        updatedAt: orderStatus.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
