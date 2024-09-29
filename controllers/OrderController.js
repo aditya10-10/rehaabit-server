@@ -374,10 +374,10 @@ exports.getPendingOrdersCount = async (req, res) => {
 // Controller to change order status by admin
 exports.changeOrderStatus = async (req, res) => {
   try {
-    const { orderId, newStatus } = req.body;
+    const { orderId, status } = req.body;
 
     // Validate request body
-    if (!orderId || !newStatus) {
+    if (!orderId || !status) {
       return res.status(400).json({
         success: false,
         message: "Order ID and new status are required",
@@ -401,7 +401,7 @@ exports.changeOrderStatus = async (req, res) => {
       "refund completed",
     ];
 
-    if (!allowedStatuses.includes(newStatus)) {
+    if (!allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid order status",
@@ -419,7 +419,7 @@ exports.changeOrderStatus = async (req, res) => {
 
     // Update the order's status
     const orderStatus = await OrderStatus.findById(order.status._id);
-    orderStatus.status = newStatus;
+    orderStatus.status = status;
     orderStatus.updatedAt = Date.now(); // Update the timestamp for the status change
 
     // Save the updated status
