@@ -7,6 +7,7 @@ const Order = require("../models/Order");
 const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
 const Partner = require("../models/Partner");
+const { generateOrderId } = require("../utils/order"); 
 
 // Process Payment and Create Razorpay Order
 // exports.processPayment = async (req, res) => {
@@ -275,8 +276,10 @@ exports.verifyPayment = async (req, res) => {
     // console.log(singleOrder);
 
     // Create a new order
+    const id= await generateOrderId();
     const newOrder = new Order({
       user: userId,
+      orderId:id,
       services: servicesToProcess.map((service) => ({
         serviceId: isSingleOrder ? service.serviceId : service.serviceId._id,
         qty: service.qty,
