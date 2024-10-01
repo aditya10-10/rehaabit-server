@@ -63,7 +63,6 @@ exports.placeOrder = async (req, res) => {
     });
     await orderStatus.save();
 
-    // Create a new order
     const newOrder = new Order({
       user: userId,
       services: cart.services.map((service) => ({
