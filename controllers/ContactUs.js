@@ -1,16 +1,18 @@
 const Contact = require("../models/Contact");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-
+const {generateContactId} = require("../utils/generateId");
 exports.contactUsController = async (req, res) => {
   const { firstName, lastName, email, phoneNumber, subject, message } =
     req.body;
 
   try {
     // Save contact form data to the database
+    const id=await generateContactId();
     const newContact = new Contact({
       firstName,
       lastName,
+      contactId:id,
       email,
       phoneNumber,
       subject,

@@ -9,11 +9,13 @@ const {
   getRevenue,
   getPendingOrdersCount,
   changeOrderStatus,
+  cancelOrder
 } = require("../controllers/OrderController");
 
 router.post("/placeOrder", auth, isUser, placeOrder);
 router.post("/updateorderstatus", auth, isAdmin, changeOrderStatus);
 router.post("/purchaseService", auth, isUser, purchaseService);
+router.post("/cancelOrder", auth, isUser, cancelOrder);
 router.get("/getUserOrders", auth, isUser, getUserOrders);
 router.get("/getAllOrders", auth, isAdmin, getAllOrders);
 router.get("/getRevenue", auth, isAdmin, getRevenue);
