@@ -1,7 +1,9 @@
 const Enquiry = require("../models/Enquiry");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-const { generateEnquiryId } = require("../utils/generateId");
+
+const { generateOrderId } = require("../utils/order");
+
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
@@ -18,7 +20,7 @@ const validatePhoneNumber = (contactNumber) => {
 // Create a new enquiry
 exports.createEnquiry = async (req, res) => {
   try {
-    const { firstName, lastName, email, contactNumber, serviceId, query } =
+    let { firstName, lastName, email, contactNumber, serviceId, query } =
       req.body;
 
     if (typeof contactNumber === "number") {
@@ -28,8 +30,11 @@ exports.createEnquiry = async (req, res) => {
     // Parse and validate phone number
     const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
-    const id = await generateEnquiryId();
+    // Create a new Enquiry object
+    const enquiryId = generateOrderId();
+
     const newEnquiry = new Enquiry({
+      enquiryId,
       firstName,
       lastName,
       enquiryId: id,
@@ -39,13 +44,13 @@ exports.createEnquiry = async (req, res) => {
       query,
     });
 
-    console.log(newEnquiry);
-
+    // Save the enquiry to the database
     const savedEnquiry = await newEnquiry.save();
 
+    // Send a confirmation email
     const emailRes = await mailSender(
       email,
-      "Your Data was sent successfully",
+      "Your Enquiry was submitted successfully",
       contactUsEmail(email, firstName, lastName, contactNumber, query)
     );
 
@@ -73,12 +78,71 @@ exports.getAllEnquiries = async (req, res) => {
 // Get an enquiry by ID
 exports.getEnquiryById = async (req, res) => {
   try {
-    const enquiry = await Enquiry.findById(req.body.id).populate("serviceId");
+    const enquiry = await Enquiry.findOne({
+      enquiryId: req.params.id,
+    }).populate("serviceId");
     if (!enquiry) {
       return res.status(404).json({ message: "Enquiry not found" });
     }
     res.status(200).json({ data: enquiry });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch enquiry", error });
+  }
+};
+
+// Update an enquiry (status, priority, response, or response log)
+exports.updateEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params; // enquiryId
+    const { status, priority, response, adminId } = req.body;
+
+    // Find the enquiry by enquiryId
+    const enquiry = await Enquiry.findOne({ enquiryId: id });
+    if (!enquiry) {
+      return res.status(404).json({ message: "Enquiry not found" });
+    }
+
+    // Update fields if provided in the request body
+    if (status) enquiry.status = status;
+    if (priority) enquiry.priority = priority;
+
+    // If there's a new response, log it in the response log
+    if (response && adminId) {
+      enquiry.response = response; // Update current response
+      enquiry.responseLog.push({
+        adminId,
+        response,
+        respondedAt: Date.now(),
+      });
+    }
+
+    // Save the updated enquiry
+    const updatedEnquiry = await enquiry.save();
+
+    res.status(200).json({
+      message: "Enquiry updated successfully",
+      data: updatedEnquiry,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update enquiry", error });
+  }
+};
+
+// Delete an enquiry by ID
+exports.deleteEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params; // enquiryId
+
+    // Find the enquiry by ID and delete
+    const enquiry = await Enquiry.findOneAndDelete({ enquiryId: id });
+    if (!enquiry) {
+      return res.status(404).json({ message: "Enquiry not found" });
+    }
+
+    res.status(200).json({
+      message: "Enquiry deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete enquiry", error });
   }
 };
