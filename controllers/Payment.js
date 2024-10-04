@@ -7,7 +7,7 @@ const Order = require("../models/Order");
 const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
 const Partner = require("../models/Partner");
-const { generateOrderId } = require("../utils/order"); 
+const {generateOrderId} = require('../utils/generateId');
 
 // Process Payment and Create Razorpay Order
 // exports.processPayment = async (req, res) => {

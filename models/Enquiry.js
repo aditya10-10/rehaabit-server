@@ -5,6 +5,11 @@ const enquirySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  enquiryId:{
+    type: String,
+    required: true,
+    unique: true,
+  },
   lastName: {
     type: String,
     required: true,

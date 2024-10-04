@@ -1,7 +1,7 @@
 const Enquiry = require("../models/Enquiry");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-
+const { generateEnquiryId } = require("../utils/generateId");
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
@@ -28,9 +28,11 @@ exports.createEnquiry = async (req, res) => {
     // Parse and validate phone number
     const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
+    const id = await generateEnquiryId();
     const newEnquiry = new Enquiry({
       firstName,
       lastName,
+      enquiryId: id,
       email,
       contactNumber: formattedPhoneNumber,
       serviceId,

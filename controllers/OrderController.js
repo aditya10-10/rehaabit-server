@@ -191,6 +191,69 @@ exports.purchaseService = async (req, res) => {
   }
 };
 
+exports.cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const userId = req.user.id;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID is required",
+      });
+    }
+
+    const order = await Order.findById(orderId).populate("status");
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.user.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to cancel this order",
+      });
+    }
+    const isProfessionalAssigned =order.status.status === "professional assigned";
+    let refundAmount = order.totalCost;
+    if (isProfessionalAssigned) {
+      const serviceTime= new Date(order.scheduleTime);
+      const currentTime = Date.now();
+      const timeDiff = serviceTime - currentTime;
+      const threeHoursInMs= 3*60*60*1000;
+      if (timeDiff <= threeHoursInMs && timeDiff >= 0) {
+        const hoursUntilService = Math.ceil(timeDiff / (60 * 60 * 1000)); 
+        const deduction = (3-hoursUntilService) * 50; 
+        refundAmount -= deduction;
+        if (refundAmount < 0) refundAmount = 0; 
+      }
+    }
+    const orderStatus = await OrderStatus.findById(order.status._id);
+    orderStatus.status = "cancelled by customer";
+    orderStatus.updatedAt = Date.now();
+    await orderStatus.save();
+    return res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: {
+        orderId: order._id,
+        newStatus: orderStatus.status,
+        refundAmount: refundAmount, // Return the calculated refund amount
+        updatedAt: orderStatus.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error cancelling order", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;

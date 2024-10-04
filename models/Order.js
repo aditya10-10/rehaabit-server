@@ -12,6 +12,10 @@ const orderSchema = new Schema({
     required: true,
     unique: true,
   },
+  scheduleTime: {
+    type: Date,
+    // required: true,
+  },
   services: [
     {
       serviceId: {
