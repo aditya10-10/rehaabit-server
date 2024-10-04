@@ -2,7 +2,7 @@ const Enquiry = require("../models/Enquiry");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
 
-const { generateOrderId } = require("../utils/order");
+const { generateOrderId } = require("../utils/generateId");
 
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
