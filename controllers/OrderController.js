@@ -195,8 +195,8 @@ exports.cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.body;
     const userId = req.user.id;
-     console.log(orderId);
-     console.log(userId);
+    console.log(orderId);
+    console.log(userId);
     if (!orderId) {
       return res.status(400).json({
         success: false,
@@ -218,29 +218,37 @@ exports.cancelOrder = async (req, res) => {
         message: "Unauthorized to cancel this order",
       });
     }
-    if(order.status.status === "cancelled by customer" || order.status.status === "cancelled by provider" || order.status.status === "refund initiated" || order.status.status === "refund completed"){
+    if (
+      order.status.status === "cancelled by customer" ||
+      order.status.status === "cancelled by provider" ||
+      order.status.status === "refund initiated" ||
+      order.status.status === "refund completed"
+    ) {
       return res.status(400).json({
         success: false,
         message: "Order already cancelled or refunded",
       });
     }
-    const isProfessionalAssigned = order.status.status === "professional assigned";
+    const isProfessionalAssigned =
+      order.status.status === "professional assigned";
     let refundAmount = order.totalCost;
     if (isProfessionalAssigned) {
-      const orderCreatedTime = new Date(order.createdAt); 
+      const orderCreatedTime = new Date(order.createdAt);
       const currentTime = Date.now();
       const timeDiff = currentTime - orderCreatedTime;
       const threeHoursInMs = 3 * 60 * 60 * 1000;
-    
+
       if (timeDiff > threeHoursInMs) {
         // If more than 3 hours have passed since the order was created
-        const hoursAfterThree = Math.floor((timeDiff - threeHoursInMs) / (60 * 60 * 1000)); 
+        const hoursAfterThree = Math.floor(
+          (timeDiff - threeHoursInMs) / (60 * 60 * 1000)
+        );
         const deduction = hoursAfterThree * 50; // ₹50 per hour after 3 hours
         refundAmount -= deduction;
-    
+
         if (refundAmount < 0) refundAmount = 0; // Prevent negative refund
       }
-    } 
+    }
     const orderStatus = await OrderStatus.findById(order.status._id);
     orderStatus.status = "cancelled by customer";
     orderStatus.updatedAt = Date.now();
@@ -251,7 +259,7 @@ exports.cancelOrder = async (req, res) => {
       data: {
         orderId: order._id,
         newStatus: orderStatus.status,
-        refundAmount: refundAmount, 
+        refundAmount: refundAmount,
         updatedAt: orderStatus.updatedAt,
       },
     });
@@ -262,13 +270,12 @@ exports.cancelOrder = async (req, res) => {
       message: "Internal server error",
     });
   }
-}
-
+};
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Populate orders and services.serviceId
+    // Populate orders and services.serviceId, sorting by createdAt in descending order
     const populatedUser = await User.findById(userId).populate({
       path: "orders",
       populate: [
@@ -284,6 +291,7 @@ exports.getUserOrders = async (req, res) => {
           path: "status",
         },
       ],
+      options: { sort: { createdAt: -1 } }, // Sort orders by createdAt in descending order
     });
 
     if (!populatedUser) {
@@ -321,7 +329,7 @@ exports.getUserOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    // Fetch all orders and populate related fields
+    // Fetch all orders and populate related fields, sorting by createdAt in descending order
     const orders = await Order.find({})
       .populate({
         path: "services.serviceId",
@@ -333,7 +341,8 @@ exports.getAllOrders = async (req, res) => {
       })
       .populate("address")
       .populate("status")
-      .populate("user");
+      .populate("user")
+      .sort({ createdAt: -1 }); // Sort orders by createdAt in descending order
 
     if (!orders || orders.length === 0) {
       return res.status(404).json({

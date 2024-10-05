@@ -7,8 +7,7 @@ const Order = require("../models/Order");
 const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
 const Partner = require("../models/Partner");
-const { generateOrderId } = require("../utils/order");
-
+const { generateOrderId } = require("../utils/generateId");
 exports.processPayment = async (req, res) => {
   try {
     const userId = req.user.id;
