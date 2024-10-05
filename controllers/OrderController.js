@@ -195,7 +195,8 @@ exports.cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.body;
     const userId = req.user.id;
-
+     console.log(orderId);
+     console.log(userId);
     if (!orderId) {
       return res.status(400).json({
         success: false,
@@ -217,20 +218,29 @@ exports.cancelOrder = async (req, res) => {
         message: "Unauthorized to cancel this order",
       });
     }
-    const isProfessionalAssigned =order.status.status === "professional assigned";
+    if(order.status.status === "cancelled by customer" || order.status.status === "cancelled by provider" || order.status.status === "refund initiated" || order.status.status === "refund completed"){
+      return res.status(400).json({
+        success: false,
+        message: "Order already cancelled or refunded",
+      });
+    }
+    const isProfessionalAssigned = order.status.status === "professional assigned";
     let refundAmount = order.totalCost;
     if (isProfessionalAssigned) {
-      const serviceTime= new Date(order.scheduleTime);
+      const orderCreatedTime = new Date(order.createdAt); 
       const currentTime = Date.now();
-      const timeDiff = serviceTime - currentTime;
-      const threeHoursInMs= 3*60*60*1000;
-      if (timeDiff <= threeHoursInMs && timeDiff >= 0) {
-        const hoursUntilService = Math.ceil(timeDiff / (60 * 60 * 1000)); 
-        const deduction = (3-hoursUntilService) * 50; 
+      const timeDiff = currentTime - orderCreatedTime;
+      const threeHoursInMs = 3 * 60 * 60 * 1000;
+    
+      if (timeDiff > threeHoursInMs) {
+        // If more than 3 hours have passed since the order was created
+        const hoursAfterThree = Math.floor((timeDiff - threeHoursInMs) / (60 * 60 * 1000)); 
+        const deduction = hoursAfterThree * 50; // ₹50 per hour after 3 hours
         refundAmount -= deduction;
-        if (refundAmount < 0) refundAmount = 0; 
+    
+        if (refundAmount < 0) refundAmount = 0; // Prevent negative refund
       }
-    }
+    } 
     const orderStatus = await OrderStatus.findById(order.status._id);
     orderStatus.status = "cancelled by customer";
     orderStatus.updatedAt = Date.now();
@@ -241,7 +251,7 @@ exports.cancelOrder = async (req, res) => {
       data: {
         orderId: order._id,
         newStatus: orderStatus.status,
-        refundAmount: refundAmount, // Return the calculated refund amount
+        refundAmount: refundAmount, 
         updatedAt: orderStatus.updatedAt,
       },
     });
