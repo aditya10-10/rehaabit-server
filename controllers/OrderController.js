@@ -191,6 +191,79 @@ exports.purchaseService = async (req, res) => {
   }
 };
 
+exports.cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const userId = req.user.id;
+     console.log(orderId);
+     console.log(userId);
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID is required",
+      });
+    }
+
+    const order = await Order.findById(orderId).populate("status");
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.user.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to cancel this order",
+      });
+    }
+    if(order.status.status === "cancelled by customer" || order.status.status === "cancelled by provider" || order.status.status === "refund initiated" || order.status.status === "refund completed"){
+      return res.status(400).json({
+        success: false,
+        message: "Order already cancelled or refunded",
+      });
+    }
+    const isProfessionalAssigned = order.status.status === "professional assigned";
+    let refundAmount = order.totalCost;
+    if (isProfessionalAssigned) {
+      const orderCreatedTime = new Date(order.createdAt); 
+      const currentTime = Date.now();
+      const timeDiff = currentTime - orderCreatedTime;
+      const threeHoursInMs = 3 * 60 * 60 * 1000;
+    
+      if (timeDiff > threeHoursInMs) {
+        // If more than 3 hours have passed since the order was created
+        const hoursAfterThree = Math.floor((timeDiff - threeHoursInMs) / (60 * 60 * 1000)); 
+        const deduction = hoursAfterThree * 50; // ₹50 per hour after 3 hours
+        refundAmount -= deduction;
+    
+        if (refundAmount < 0) refundAmount = 0; // Prevent negative refund
+      }
+    } 
+    const orderStatus = await OrderStatus.findById(order.status._id);
+    orderStatus.status = "cancelled by customer";
+    orderStatus.updatedAt = Date.now();
+    await orderStatus.save();
+    return res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: {
+        orderId: order._id,
+        newStatus: orderStatus.status,
+        refundAmount: refundAmount, 
+        updatedAt: orderStatus.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error cancelling order", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;

@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const contactSchema = new mongoose.Schema({
   caseId: {
     type: String,
+    unique: true,
+    required: true,
   },
   firstName: {
     type: String,

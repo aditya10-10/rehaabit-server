@@ -1,7 +1,7 @@
 const Contact = require("../models/Contact");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-const { generateOrderId } = require("../utils/order");
+const {generateContactId} = require("../utils/generateId");
 
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
@@ -30,7 +30,7 @@ exports.contactUsController = async (req, res) => {
     const formattedPhoneNumber = validatePhoneNumber(phoneNumber);
 
     // Generate a unique caseId
-    const caseId = await generateOrderId(); // Await the result of generateOrderId
+    const caseId = await generateContactId() // Await the result of generateOrderId
 
     // Create a new contact instance
     const newContact = new Contact({
