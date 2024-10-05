@@ -7,51 +7,7 @@ const Order = require("../models/Order");
 const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
 const Partner = require("../models/Partner");
-const {generateOrderId} = require('../utils/generateId');
-
-// Process Payment and Create Razorpay Order
-// exports.processPayment = async (req, res) => {
-//   const { services } = req.body; // This should be an array of service objects with serviceId, qty, and price
-//   const userId = req.user.id;
-
-//   console.log("Services being sent:", services);
-
-//   if (!services || services.length === 0) {
-//     return res.json({ success: false, message: "Please provide services" });
-//   }
-
-//   let totalAmount = 0;
-//   try {
-//     for (const service of services) {
-//       const { serviceId, qty, price } = service;
-//       const serviceRecord = await Service.findById(serviceId);
-
-//       if (!serviceRecord) {
-//         return res.status(404).json({
-//           success: false,
-//           message: `Service ${serviceId} not found`,
-//         });
-//       }
-
-//       // Calculate the total amount based on qty and price
-//       totalAmount += price * qty;
-//     }
-
-//     const options = {
-//       amount: totalAmount * 100, // amount in the smallest currency unit
-//       currency: "INR",
-//       receipt: `receipt_${crypto.randomBytes(10).toString("hex")}`,
-//     };
-
-//     const paymentResponse = await instance.orders.create(options);
-//     res.json({ success: true, message: paymentResponse });
-//   } catch (error) {
-//     console.error("Error creating payment order:", error);
-//     res.status(500).json({ success: false, message: "Internal Server Error" });
-//   }
-// };
-
-// Process Payment and Create Razorpay Order
+const { generateOrderId } = require("../utils/generateId");
 
 exports.processPayment = async (req, res) => {
   try {

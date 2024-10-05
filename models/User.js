@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
     },
     accountType: {
       type: String,
-      enum: ["User", "Partner", "Admin"],
+      enum: ["User", "Partner", "Admin", "Caller", "Content Writer"],
       required: [true, "Account type is required"],
     },
     token: {

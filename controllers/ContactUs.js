@@ -1,39 +1,46 @@
 const Contact = require("../models/Contact");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-const {generateContactId} = require("../utils/generateId");
-
+const { generateOrderId } = require("../utils/generateId");
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
 
 // Utility function to parse and validate phone number
 const validatePhoneNumber = (contactNumber) => {
-  const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
-  if (!phoneUtil.isValidNumber(phoneNumber)) {
-    throw new Error("Invalid phone number.");
+  try {
+    const phoneNumber = phoneUtil.parseAndKeepRawInput(contactNumber, "IN");
+    if (!phoneUtil.isValidNumber(phoneNumber)) {
+      throw new Error("Invalid phone number.");
+    }
+    return phoneUtil.format(phoneNumber, PNF.E164);
+  } catch (error) {
+    throw new Error("Invalid phone number format");
   }
-  return phoneUtil.format(phoneNumber, PNF.E164);
 };
 
-// 1. Create a new contact submission
 exports.contactUsController = async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNumber, subject, message } =
+    let { firstName, lastName, email, phoneNumber, subject, message } =
       req.body;
 
+    // Validate required fields
+    if (!firstName || !email || !phoneNumber || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "All required fields must be provided",
+      });
+    }
+
+    // Convert phone number to string if it's a number
     if (typeof phoneNumber === "number") {
       phoneNumber = phoneNumber.toString();
     }
 
-    // Parse and validate phone number
     const formattedPhoneNumber = validatePhoneNumber(phoneNumber);
+    const caseId = await generateOrderId();
 
-    // Generate a unique caseId
-    const caseId = await generateContactId() // Await the result of generateOrderId
-
-    // Create a new contact instance
-    const newContact = new Contact({
+    const newContact = await Contact.create({
       caseId,
       firstName,
       lastName,
@@ -45,18 +52,21 @@ exports.contactUsController = async (req, res) => {
       priority: "medium", // Default priority
     });
 
-    // Save the new contact
-    await newContact.save();
-
-    // Send confirmation email to the user
-    const emailResponse = await mailSender(
+    // Send confirmation email
+    await mailSender(
       email,
       "Your message has been received",
-      contactUsEmail(email, firstName, lastName, message, phoneNumber, subject)
+      contactUsEmail(
+        email,
+        firstName,
+        lastName,
+        message,
+        formattedPhoneNumber,
+        subject
+      )
     );
 
-    // Return success response
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: "Your message has been sent successfully",
       data: newContact,
@@ -65,11 +75,12 @@ exports.contactUsController = async (req, res) => {
     console.error("Error creating contact:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to send your message",
+      message: error.message || "Failed to send your message",
     });
   }
 };
 
+// Remaining controller functions with similar fixes...
 // 2. Retrieve all contacts
 exports.getAllContactsController = async (req, res) => {
   try {
@@ -136,14 +147,14 @@ exports.getContactByIdController = async (req, res) => {
 
 // 4. Update contact status, priority, assignment, and notes (admin only)
 exports.updateContactStatusAndAssignmentController = async (req, res) => {
-  const { caseId, newStatus, newPriority, assignedAdmin, adminNotes } =
+  const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } =
     req.body;
 
-  console.log(caseId, newStatus, newPriority, assignedAdmin, adminNotes);
+  console.log(id, caseId, newStatus, newPriority, assignedAdmin, adminNotes);
 
   try {
     // Find the contact by caseId
-    const contact = await Contact.findOne({ caseId });
+    const contact = await Contact.findById({ _id: id });
     if (!contact) {
       return res.status(404).json({
         success: false,
@@ -193,7 +204,20 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
 exports.adminResponseController = async (req, res) => {
   const { id, adminId, response, newStatus, newPriority } = req.body;
 
-  console.log(id, adminId, response, newStatus, newPriority);
+  console.log("Received Data:", {
+    id,
+    adminId,
+    response,
+    newStatus,
+    newPriority,
+  }); // Debug log
+
+  if (!id || !adminId || !response) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+  }
 
   try {
     // Find the contact by caseId
@@ -249,6 +273,7 @@ exports.adminResponseController = async (req, res) => {
     });
   }
 };
+
 // 6. (Optional) Delete a contact by caseId (admin only)
 exports.deleteContactController = async (req, res) => {
   const { caseId } = req.body;
