@@ -1,7 +1,6 @@
-// models/OrderStatus.js
 const mongoose = require("mongoose");
 
-const orderStatusSchema = new mongoose.Schema({
+const statusUpdateSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
@@ -25,6 +24,12 @@ const orderStatusSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
+  },
+});
+const orderStatusSchema = new mongoose.Schema({
+  statuses: {
+    type: [statusUpdateSchema],
+    default: [{ status: "pending" }], // Initialize with a "pending" status
   },
 });
 
