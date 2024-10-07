@@ -40,7 +40,7 @@ exports.contactUsController = async (req, res) => {
 
     const formattedPhoneNumber = validatePhoneNumber(phoneNumber);
 
-    // Generate a unique caseId
+    // Generate a unique caseId for the contact
     const caseId = await generateContactId(); // Await the result of generateOrderId
 
     // Create a new contact instance
