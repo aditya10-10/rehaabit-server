@@ -233,6 +233,7 @@ exports.cancelOrder = async (req, res) => {
     const isProfessionalAssigned = currentStatus === "professional assigned";
     let refundAmount = order.totalCost;
 
+    //Check Admin also can cancel the order
     if (isProfessionalAssigned && user.accountType!=='Admin') {
       const orderCreatedTime = new Date(order.createdAt);
       const currentTime = Date.now();
