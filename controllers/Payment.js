@@ -8,6 +8,7 @@ const Service = require("../models/Service");
 const OrderStatus = require("../models/OrderStatus");
 const Partner = require("../models/Partner");
 const { generateOrderId } = require("../utils/generateId");
+
 exports.processPayment = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -160,7 +161,7 @@ exports.verifyPayment = async (req, res) => {
 
     // Create a new order status
     const orderStatus = new OrderStatus({
-      status: "pending",
+      statuses: [{ status: "pending" }],
     });
     await orderStatus.save();
 

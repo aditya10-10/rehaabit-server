@@ -59,7 +59,7 @@ exports.placeOrder = async (req, res) => {
 
     // Create a new order status
     const orderStatus = new OrderStatus({
-      status: "pending",
+      statuses: [{ status: "pending" }],
     });
     await orderStatus.save();
 
@@ -143,7 +143,7 @@ exports.purchaseService = async (req, res) => {
     }
 
     const orderStatus = new OrderStatus({
-      status: "pending",
+      statuses: [{ status: "pending" }],
     });
     await orderStatus.save();
 
@@ -195,8 +195,7 @@ exports.cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.body;
     const userId = req.user.id;
-    console.log(orderId);
-    console.log(userId);
+    const user = await User.findById(userId);
     if (!orderId) {
       return res.status(400).json({
         success: false,
@@ -211,56 +210,56 @@ exports.cancelOrder = async (req, res) => {
         message: "Order not found",
       });
     }
-
+  if(user.accountType!=='Admin'){
     if (order.user.toString() !== userId) {
       return res.status(403).json({
         success: false,
         message: "Unauthorized to cancel this order",
       });
     }
+  }
+    const currentStatus = order.status.statuses[order.status.statuses.length - 1].status;
     if (
-      order.status.status === "cancelled by customer" ||
-      order.status.status === "cancelled by provider" ||
-      order.status.status === "refund initiated" ||
-      order.status.status === "refund completed"
+      currentStatus === "cancelled by customer" ||
+      currentStatus === "cancelled by provider" ||
+      currentStatus === "refund initiated" ||
+      currentStatus === "refund completed"
     ) {
       return res.status(400).json({
         success: false,
         message: "Order already cancelled or refunded",
       });
     }
-    const isProfessionalAssigned =
-      order.status.status === "professional assigned";
+    const isProfessionalAssigned = currentStatus === "professional assigned";
     let refundAmount = order.totalCost;
-    if (isProfessionalAssigned) {
+
+    //Check Admin also can cancel the order
+    if (isProfessionalAssigned && user.accountType!=='Admin') {
       const orderCreatedTime = new Date(order.createdAt);
       const currentTime = Date.now();
       const timeDiff = currentTime - orderCreatedTime;
       const threeHoursInMs = 3 * 60 * 60 * 1000;
 
       if (timeDiff > threeHoursInMs) {
-        // If more than 3 hours have passed since the order was created
-        const hoursAfterThree = Math.floor(
-          (timeDiff - threeHoursInMs) / (60 * 60 * 1000)
-        );
-        const deduction = hoursAfterThree * 50; // ₹50 per hour after 3 hours
+        const hoursAfterThree = Math.floor((timeDiff - threeHoursInMs) / (60 * 60 * 1000));
+        const deduction = hoursAfterThree * 50;
         refundAmount -= deduction;
 
-        if (refundAmount < 0) refundAmount = 0; // Prevent negative refund
+        if (refundAmount < 0) refundAmount = 0;
       }
     }
+    const cancelText= user.accountType==='Admin'?'cancelled by provider':'cancelled by customer';
     const orderStatus = await OrderStatus.findById(order.status._id);
-    orderStatus.status = "cancelled by customer";
-    orderStatus.updatedAt = Date.now();
+    orderStatus.statuses.push({ status: cancelText, updatedAt: Date.now() });
     await orderStatus.save();
     return res.status(200).json({
       success: true,
       message: "Order cancelled successfully",
       data: {
         orderId: order._id,
-        newStatus: orderStatus.status,
+        newStatus: cancelText,
         refundAmount: refundAmount,
-        updatedAt: orderStatus.updatedAt,
+        updatedAt: Date.now(),
       },
     });
   } catch (error) {
@@ -271,6 +270,8 @@ exports.cancelOrder = async (req, res) => {
     });
   }
 };
+
+
 exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -428,15 +429,20 @@ exports.getPendingOrdersCount = async (req, res) => {
       path: "status",
       model: "OrderStatus",
     });
-    const pendingOrders = orders.filter(
-      (order) => order.status.status === "pending"
-    );
+
+    // Filter orders where the last status in the statuses array is "pending"
+    const pendingOrders = orders.filter((order) => {
+      const latestStatus = order.status.statuses[order.status.statuses.length - 1];
+      return latestStatus.status === "pending";
+    });
+
     if (!pendingOrders || pendingOrders.length === 0) {
       return res.status(404).json({
         success: false,
         message: "No pending orders found",
       });
     }
+
     const count = pendingOrders.length;
     return res.status(200).json({
       success: true,
@@ -452,6 +458,7 @@ exports.getPendingOrdersCount = async (req, res) => {
   }
 };
 
+
 // Controller to change order status by admin
 exports.changeOrderStatus = async (req, res) => {
   try {
@@ -465,7 +472,7 @@ exports.changeOrderStatus = async (req, res) => {
       });
     }
 
-    // Check if the provided status is valid
+    // Validate the provided status
     const allowedStatuses = [
       "pending",
       "confirmed",
@@ -498,10 +505,9 @@ exports.changeOrderStatus = async (req, res) => {
       });
     }
 
-    // Update the order's status
+    // Add the new status to the statuses array
     const orderStatus = await OrderStatus.findById(order.status._id);
-    orderStatus.status = status;
-    orderStatus.updatedAt = Date.now(); // Update the timestamp for the status change
+    orderStatus.statuses.push({ status, updatedAt: Date.now() });
 
     // Save the updated status
     await orderStatus.save();
@@ -512,8 +518,8 @@ exports.changeOrderStatus = async (req, res) => {
       message: "Order status updated successfully",
       data: {
         orderId: order._id,
-        newStatus: orderStatus.status,
-        updatedAt: orderStatus.updatedAt,
+        newStatus: status,
+        updatedAt: Date.now(),
       },
     });
   } catch (error) {
@@ -524,3 +530,4 @@ exports.changeOrderStatus = async (req, res) => {
     });
   }
 };
+
