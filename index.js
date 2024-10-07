@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-// Load environment variables
+// Load environment variables for development
 dotenv.config();
 
 const userRoutes = require("./routes/User");
