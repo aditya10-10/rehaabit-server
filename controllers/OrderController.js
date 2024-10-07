@@ -233,7 +233,7 @@ exports.cancelOrder = async (req, res) => {
     const isProfessionalAssigned = currentStatus === "professional assigned";
     let refundAmount = order.totalCost;
 
-    if (isProfessionalAssigned) {
+    if (isProfessionalAssigned && user.accountType!=='Admin') {
       const orderCreatedTime = new Date(order.createdAt);
       const currentTime = Date.now();
       const timeDiff = currentTime - orderCreatedTime;
