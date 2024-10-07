@@ -276,7 +276,7 @@ exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Populate orders and services.serviceId
+    // Populate orders and services.serviceId, sorting by createdAt in descending order
     const populatedUser = await User.findById(userId).populate({
       path: "orders",
       populate: [
@@ -292,6 +292,7 @@ exports.getUserOrders = async (req, res) => {
           path: "status",
         },
       ],
+      options: { sort: { createdAt: -1 } }, // Sort orders by createdAt in descending order
     });
 
     if (!populatedUser) {
@@ -329,7 +330,7 @@ exports.getUserOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    // Fetch all orders and populate related fields
+    // Fetch all orders and populate related fields, sorting by createdAt in descending order
     const orders = await Order.find({})
       .populate({
         path: "services.serviceId",
@@ -341,7 +342,8 @@ exports.getAllOrders = async (req, res) => {
       })
       .populate("address")
       .populate("status")
-      .populate("user");
+      .populate("user")
+      .sort({ createdAt: -1 }); // Sort orders by createdAt in descending order
 
     if (!orders || orders.length === 0) {
       return res.status(404).json({

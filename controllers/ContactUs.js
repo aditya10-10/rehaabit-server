@@ -1,7 +1,8 @@
 const Contact = require("../models/Contact");
 const { contactUsEmail } = require("../templates/Contact");
 const mailSender = require("../utils/mailSender");
-const { generateOrderId } = require("../utils/generateId");
+const { generateContactId } = require("../utils/generateId");
+
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
@@ -38,9 +39,12 @@ exports.contactUsController = async (req, res) => {
     }
 
     const formattedPhoneNumber = validatePhoneNumber(phoneNumber);
-    const caseId = await generateOrderId();
 
-    const newContact = await Contact.create({
+    // Generate a unique caseId
+    const caseId = await generateContactId(); // Await the result of generateOrderId
+
+    // Create a new contact instance
+    const newContact = new Contact({
       caseId,
       firstName,
       lastName,
@@ -48,8 +52,6 @@ exports.contactUsController = async (req, res) => {
       phoneNumber: formattedPhoneNumber,
       subject,
       message,
-      status: "pending", // Default status
-      priority: "medium", // Default priority
     });
 
     // Send confirmation email
@@ -94,7 +96,8 @@ exports.getAllContactsController = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      });
+      })
+      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
 
     // Exclude version key
     return res.status(200).json({

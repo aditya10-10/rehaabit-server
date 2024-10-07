@@ -172,64 +172,6 @@ exports.editService = async (req, res) => {
   }
 };
 
-// DELETE a Service
-
-// exports.deleteService = async (req, res) => {
-//   try {
-//     const { serviceId } = req.body;
-
-//     if (!serviceId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Missing required property: serviceId",
-//       });
-//     }
-
-//     const service = await Service.findById(serviceId);
-
-//     if (!service) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Service not found",
-//       });
-//     }
-
-//     await Service.findByIdAndDelete(serviceId);
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Service deleted successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// // GET all Services
-// exports.getAllServices = async (req, res) => {
-//   try {
-//     const services = await Service.find()
-//       .populate("serviceContent")
-//       .populate("ratingAndReviews")
-//       .populate("faq");
-
-//     res.status(200).json({
-//       success: true,
-//       services,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
-
 exports.deleteService = async (req, res) => {
   try {
     const { serviceId, subCategoryId } = req.body;
