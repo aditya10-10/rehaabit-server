@@ -10,11 +10,6 @@ const enquirySchema = new mongoose.Schema({
     type: String,
     required: true, // Customer's first name is required
   },
-  enquiryId:{
-    type: String,
-    required: true,
-    unique: true,
-  },
   lastName: {
     type: String,
     required: true, // Customer's last name is required

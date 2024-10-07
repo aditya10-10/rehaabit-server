@@ -19,8 +19,8 @@ const responseLogSchema = new mongoose.Schema({
 const contactSchema = new mongoose.Schema({
   caseId: {
     type: String,
-    required: true,
     unique: true,
+    required: true,
   },
   firstName: {
     type: String,

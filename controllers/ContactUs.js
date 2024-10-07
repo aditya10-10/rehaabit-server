@@ -48,6 +48,8 @@ exports.contactUsController = async (req, res) => {
       phoneNumber: formattedPhoneNumber,
       subject,
       message,
+      status: "pending", // Default status
+      priority: "medium", // Default priority
     });
 
     // Send confirmation email
