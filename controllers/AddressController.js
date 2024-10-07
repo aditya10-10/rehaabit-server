@@ -81,9 +81,12 @@ exports.updateAddress = async (req, res) => {
     } = req.body;
     const userId = req.user.id;
 
-    const addressToUpdate = await Address.findOne({ _id: addressId, user: userId });
-     console.log(addressToUpdate);
-     console.log(status);
+    const addressToUpdate = await Address.findOne({
+      _id: addressId,
+      user: userId,
+    });
+    console.log(addressToUpdate);
+    console.log(status);
     if (!addressToUpdate) {
       return res.status(404).json({
         success: false,
@@ -104,11 +107,11 @@ exports.updateAddress = async (req, res) => {
 
     if (status === "Default") {
       await Address.updateMany(
-          { user: userId, status: "Default" },
-          { $set: { status: "" } }
+        { user: userId, status: "Default" },
+        { $set: { status: "" } }
       );
       addressToUpdate.status = "Default";
-  }
+    }
     await addressToUpdate.save();
 
     return res.status(200).json({
@@ -125,7 +128,6 @@ exports.updateAddress = async (req, res) => {
   }
 };
 
-
 exports.deleteAddress = async (req, res) => {
   try {
     const { addressId } = req.body;
@@ -138,7 +140,10 @@ exports.deleteAddress = async (req, res) => {
       });
     }
 
-    const addressToDelete = await Address.findOne({ _id: addressId, user: userId });
+    const addressToDelete = await Address.findOne({
+      _id: addressId,
+      user: userId,
+    });
 
     if (!addressToDelete) {
       return res.status(404).json({
@@ -173,12 +178,13 @@ exports.deleteAddress = async (req, res) => {
   }
 };
 
-
 exports.getUserAddresses = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = await User.findById(userId).populate("address");
+    const user = await User.findById(userId).populate({
+      path: "address",
+    });
 
     if (!user) {
       return res

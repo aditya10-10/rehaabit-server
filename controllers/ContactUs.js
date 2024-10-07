@@ -83,7 +83,8 @@ exports.getAllContactsController = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      });
+      })
+      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
 
     // Exclude version key
     return res.status(200).json({

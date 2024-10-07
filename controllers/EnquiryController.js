@@ -63,9 +63,13 @@ exports.createEnquiry = async (req, res) => {
 };
 
 // Get all enquiries
+// Get all enquiries, sorted by newest first
 exports.getAllEnquiries = async (req, res) => {
   try {
-    const enquiries = await Enquiry.find().populate("serviceId");
+    const enquiries = await Enquiry.find()
+      .populate("serviceId")
+      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
+
     res.status(200).json({ data: enquiries });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch enquiries", error });
@@ -90,7 +94,7 @@ exports.getEnquiryById = async (req, res) => {
 // Update an enquiry (status, priority, response, or response log)
 exports.updateEnquiry = async (req, res) => {
   try {
-    const { id } = req.params; // enquiryId
+    const { id } = req.body; // enquiryId
     const { status, priority, response, adminId } = req.body;
 
     // Find the enquiry by enquiryId
@@ -128,7 +132,7 @@ exports.updateEnquiry = async (req, res) => {
 // Delete an enquiry by ID
 exports.deleteEnquiry = async (req, res) => {
   try {
-    const { id } = req.params; // enquiryId
+    const { id } = req.body; // enquiryId
 
     // Find the enquiry by ID and delete
     const enquiry = await Enquiry.findOneAndDelete({ enquiryId: id });

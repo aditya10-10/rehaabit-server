@@ -47,7 +47,8 @@ exports.getAllUsers = async (req, res) => {
         path: "additionalDetails",
         model: "Profile", // Ensure this is the correct reference model
         select: "firstName lastName", // Select relevant fields to reduce query size
-      });
+      })
+      .sort({ createdAt: -1 });
     if (!users || users.length === 0) {
       return res.status(404).json({
         success: false,
