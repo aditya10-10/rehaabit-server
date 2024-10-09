@@ -52,7 +52,7 @@ exports.createService = async (req, res) => {
       process.env.FOLDER_NAME
     );
 
-    console.log(thumbnailImage);
+    // console.log(thumbnailImage);
 
     // Create a new Service
     const newService = await Service.create({
