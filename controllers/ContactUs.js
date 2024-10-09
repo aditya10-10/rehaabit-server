@@ -68,6 +68,8 @@ exports.contactUsController = async (req, res) => {
       )
     );
 
+    newContact.save();
+
     return res.status(201).json({
       success: true,
       message: "Your message has been sent successfully",
