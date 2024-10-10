@@ -150,14 +150,13 @@ exports.getContactByIdController = async (req, res) => {
 
 // 4. Update contact status, priority, assignment, and notes (admin only)
 exports.updateContactStatusAndAssignmentController = async (req, res) => {
-  const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } =
-    req.body;
+  const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } = req.body;
 
   console.log(id, caseId, newStatus, newPriority, assignedAdmin, adminNotes);
 
   try {
-    // Find the contact by caseId
-    const contact = await Contact.findById({ _id: id });
+    // Find the contact by id
+    const contact = await Contact.findById(id);
     if (!contact) {
       return res.status(404).json({
         success: false,
@@ -188,11 +187,21 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
     // Save the updated contact
     await contact.save();
 
-    // Return the updated contact including caseId
+    // Populate the assignedAdmin field and include caseId in the response
+    const populatedContact = await Contact.findById(contact._id).populate({
+      path: "assignedAdmin",
+      model: "User",
+      populate: {
+        path: "additionalDetails",
+        select: "firstName lastName",
+        model: "Profile",
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Contact updated successfully",
-      data: contact,
+      data: populatedContact,
     });
   } catch (error) {
     console.error("Error updating contact:", error);
@@ -202,6 +211,7 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
     });
   }
 };
+
 
 // 5. Admin responds to contact (logs response and updates status)
 exports.adminResponseController = async (req, res) => {
@@ -262,11 +272,19 @@ exports.adminResponseController = async (req, res) => {
 
     // Save the updated contact
     await contact.save();
-
+   const populatedContact = await Contact.findById(contact._id).populate({
+      path: "assignedAdmin",
+      model: "User",
+      populate: {
+        path: "additionalDetails",
+        select: "firstName lastName",
+        model: "Profile",
+      }
+   })
     return res.status(200).json({
       success: true,
       message: "Admin response added successfully",
-      data: contact,
+      data: populatedContact,
     });
   } catch (error) {
     console.error("Error responding to contact:", error);
