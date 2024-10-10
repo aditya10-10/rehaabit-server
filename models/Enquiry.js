@@ -1,5 +1,19 @@
 const mongoose = require("mongoose");
-
+const enquiryLogSchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Referencing User for adminId
+    required: true,
+  },
+  response: {
+    type: String,
+    required: true,
+  },
+  respondedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 const enquirySchema = new mongoose.Schema({
   enquiryId: {
     type: String,
@@ -55,13 +69,7 @@ const enquirySchema = new mongoose.Schema({
   response: {
     type: String, // Admin's response to the enquiry
   },
-  responseLog: [
-    {
-      adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Referencing User for adminId
-      response: { type: String, trim: true },
-      respondedAt: { type: Date, default: Date.now },
-    },
-  ],
+  responseLog: [enquiryLogSchema], // Log of admin responses
   address: {
     type: mongoose.Schema.Types.ObjectId, // Assuming address is also an ObjectId
     ref: "Address",
