@@ -66,9 +66,22 @@ exports.createEnquiry = async (req, res) => {
 // Get all enquiries, sorted by newest first
 exports.getAllEnquiries = async (req, res) => {
   try {
-    const enquiries = await Enquiry.find()
-      .populate("serviceId")
-      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
+    const enquiries = await Enquiry.find().populate([
+      {
+        path: "assignedAdmin",
+        model: "User",
+        populate: {
+          path: "additionalDetails",
+          select: "firstName lastName",
+          model: "Profile",
+        },
+      },
+      {
+        path: "serviceId",
+        model: "Service",
+        select: "serviceName"
+      }
+    ]).sort({ createdAt: -1 })   // Sort by createdAt in descending order (newest first)
 
     res.status(200).json({ data: enquiries });
   } catch (error) {
@@ -92,42 +105,106 @@ exports.getEnquiryById = async (req, res) => {
 };
 
 // Update an enquiry (status, priority, response, or response log)
-exports.updateEnquiry = async (req, res) => {
-  try {
-    const { id } = req.body; // enquiryId
-    const { status, priority, response, adminId } = req.body;
+exports.updateEnquiryAndStatusAssignment = async (req, res) => {
+  const { enquiryId,id, newStatus, newPriority, assignedAdmin} = req.body;
 
+  // console.log({enquiryId,id, newStatus, newPriority, assignedAdmin});
+  try {
     // Find the enquiry by enquiryId
-    const enquiry = await Enquiry.findOne({ enquiryId: id });
+    const enquiry = await Enquiry.findById(id);
     if (!enquiry) {
       return res.status(404).json({ message: "Enquiry not found" });
     }
 
     // Update fields if provided in the request body
-    if (status) enquiry.status = status;
-    if (priority) enquiry.priority = priority;
-
-    // If there's a new response, log it in the response log
-    if (response && adminId) {
-      enquiry.response = response; // Update current response
-      enquiry.responseLog.push({
-        adminId,
-        response,
-        respondedAt: Date.now(),
-      });
+    if (newStatus){
+      enquiry.status = newStatus;
+      if (newStatus === "closed") {
+        enquiry.closedAt = Date.now();
+      }
     }
+    if (newPriority) enquiry.priority = newPriority;
+    if (assignedAdmin) enquiry.assignedAdmin = assignedAdmin;
 
     // Save the updated enquiry
-    const updatedEnquiry = await enquiry.save();
+    await enquiry.save();
+    const populatedEnquiry = await enquiry.populate([
+      {
+        path: "assignedAdmin",
+        model: "User",
+        populate: {
+          path: "additionalDetails",
+          select: "firstName lastName",
+          model: "Profile",
+        },
+      },
+      {
+        path: "serviceId",
+        model: "Service",
+        select: "serviceName"
+      }
+    ]);
 
+    console.log("populatedEnquiry",populatedEnquiry);
     res.status(200).json({
       message: "Enquiry updated successfully",
-      data: updatedEnquiry,
+      data: populatedEnquiry,
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to update enquiry", error });
   }
 };
+
+// Admin route for responding to enquiries
+exports.adminResponse = async (req, res) => {
+  const { id, adminId, response} = req.body;
+  console.log({id, adminId, response});
+  if (!id || !adminId || !response) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+  }
+
+  try{
+    const enquiry = await Enquiry.findById(id);
+    if (!enquiry) {
+      return res.status(404).json({ message: "Enquiry not found" });
+    }
+
+    enquiry.response = response;
+    enquiry.responseLog.push({
+      adminId,
+      response,
+      respondedAt: Date.now(),
+    }); 
+
+    await enquiry.save();
+    const populatedEnquiry = await enquiry.populate([
+      {
+        path: "assignedAdmin",
+        model: "User",
+        populate: {
+          path: "additionalDetails",
+          select: "firstName lastName",
+          model: "Profile",
+        },
+      },
+      {
+        path: "serviceId",
+        model: "Service",
+        select: "serviceName"
+      }
+    ]);
+
+    res.status(200).json({
+      message: "Admin response added successfully",
+      data: populatedEnquiry,
+    });
+  }catch(error){
+    res.status(500).json({ message: "Failed to respond to enquiry", error });
+  } 
+}
 
 // Delete an enquiry by ID
 exports.deleteEnquiry = async (req, res) => {
