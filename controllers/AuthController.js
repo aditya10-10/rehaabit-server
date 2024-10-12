@@ -180,7 +180,7 @@ exports.login = async (req, res) => {
       { contactNumber: user.contactNumber, id: user._id, role: user.role },
       process.env.JWT_SECRET,
       {
-        expiresIn: "24h",
+        expiresIn: "9999y",
       }
     );
 
