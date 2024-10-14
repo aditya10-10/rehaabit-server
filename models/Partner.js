@@ -25,7 +25,15 @@ const PartnerSchema = new mongoose.Schema({
   },
   identificationType: {
     type: String,
-    enum: ["Passport", "Driving License", "National ID", "Other"],
+    enum: [
+      "Passport",
+      "Driving License",
+      "National ID",
+      "Birth Certificate",
+      "Aadhaar Card",
+      "VoterID",
+      "Other",
+    ],
     required: true,
   },
   identificationNumber: {
@@ -37,8 +45,6 @@ const PartnerSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true,
   },
   address: {
     street: String,
@@ -58,7 +64,7 @@ const PartnerSchema = new mongoose.Schema({
   },
   businessStructure: {
     type: String,
-    enum: ["Individual", "Corporation", "Partnership", "Other"],
+    enum: ["Individual", "Contractor", "Corporation", "Partnership", "Other"],
     required: true,
   },
   businessAddress: {
