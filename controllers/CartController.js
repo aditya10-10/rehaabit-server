@@ -244,11 +244,11 @@ exports.getAllCartServices = async (req, res) => {
     }
 
     const servicesWithDetails = cart.services.map((service) => ({
-      ...service.serviceId._doc,
-      serviceId: service.serviceId._id,
-      qty: service.qty,
-      price: service.price,
-      _id: service._id,
+      ...service?.serviceId?._doc,
+      serviceId: service?.serviceId?._id,
+      qty: service?.qty,
+      price: service?.price,
+      _id: service?._id,
     }));
 
     const cartWithDetails = {

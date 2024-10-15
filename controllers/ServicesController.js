@@ -49,7 +49,8 @@ exports.createService = async (req, res) => {
 
     const thumbnailImage = await uploadImageToCloudinary(
       thumbnail,
-      process.env.FOLDER_NAME
+      process.env.FOLDER_NAME,
+      serviceName
     );
 
     // console.log(thumbnailImage);
@@ -82,7 +83,7 @@ exports.createService = async (req, res) => {
         path: "service",
       })
       .exec();
-
+    // console.log(updatedSubCategory);
     res.status(201).json({
       success: true,
       message: "Service created successfully",
