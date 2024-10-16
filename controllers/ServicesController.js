@@ -21,7 +21,7 @@ exports.createService = async (req, res) => {
       status,
       priceStatus,
     } = req.body;
-
+    console.log(req.body);
     const thumbnail = req.files.thumbnail;
 
     // Validate the input
@@ -53,7 +53,7 @@ exports.createService = async (req, res) => {
       serviceName
     );
 
-    // console.log(thumbnailImage);
+    console.log(thumbnailImage);
 
     // Create a new Service
     const newService = await Service.create({
@@ -83,7 +83,7 @@ exports.createService = async (req, res) => {
         path: "service",
       })
       .exec();
-    // console.log(updatedSubCategory);
+    console.log(updatedSubCategory);
     res.status(201).json({
       success: true,
       message: "Service created successfully",
