@@ -32,8 +32,10 @@ exports.createCategory = async (req, res) => {
     console.log(image);
 
     // Create new category
+    const slugName = name.toLowerCase().replace(/\s+/g, '-');
     const CategoryDetails = await Category.create({
       name,
+      slugName,
       icon: image.secure_url,
       subCategory: [],
     });

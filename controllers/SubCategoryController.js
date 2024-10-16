@@ -304,12 +304,12 @@ exports.getSubCategoriesByCategory = async (req, res) => {
     if (!categoryId) {
       return res.status(400).json({
         success: false,
-        message: "Category ID is required",
+          message: "Category ID is required",
       });
     }
-
+    
     // Find the category and populate its subcategories
-    const category = await Category.findById(categoryId).populate(
+    const category = await Category.findOne({ slugName:categoryId }).populate(
       "subCategory"
     );
 
