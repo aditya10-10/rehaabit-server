@@ -36,15 +36,15 @@ const enquirySchema = new mongoose.Schema({
     type: String,
     required: true, // Phone number for follow-up
   },
-  serviceId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Service", // Reference to the service being enquired about
-    required: true,
-  },
-  // serviceName: {
-  //   type: String,
-  //   required: true, // Name of the service for admin clarity
+  // serviceId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Service", // Reference to the service being enquired about
+  //   required: true,
   // },
+  serviceName: {
+    type: String,
+    required: true, // Name of the service for admin clarity
+  },
   query: {
     type: String,
     required: true, // Customer's enquiry details are required
