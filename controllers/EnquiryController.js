@@ -19,7 +19,7 @@ const validatePhoneNumber = (contactNumber) => {
 // Create a new enquiry
 exports.createEnquiry = async (req, res) => {
   try {
-    let { firstName, lastName, email, contactNumber, serviceId, query } =
+    let { firstName, lastName, email, contactNumber, serviceName, query } =
       req.body;
 
     if (typeof contactNumber === "number") {
@@ -37,7 +37,7 @@ exports.createEnquiry = async (req, res) => {
       lastName,
       email,
       contactNumber: formattedPhoneNumber,
-      serviceId,
+      serviceName,
       query,
     });
 
@@ -77,11 +77,6 @@ exports.getAllEnquiries = async (req, res) => {
             model: "Profile",
           },
         },
-        {
-          path: "serviceId",
-          model: "Service",
-          select: "serviceName",
-        },
       ])
       .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
 
@@ -96,7 +91,7 @@ exports.getEnquiryById = async (req, res) => {
   try {
     const enquiry = await Enquiry.findOne({
       enquiryId: req.params.id,
-    }).populate("serviceId");
+    });
     if (!enquiry) {
       return res.status(404).json({ message: "Enquiry not found" });
     }
@@ -139,12 +134,7 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      },
-      {
-        path: "serviceId",
-        model: "Service",
-        select: "serviceName",
-      },
+      }
     ]);
 
     console.log("populatedEnquiry", populatedEnquiry);
@@ -191,12 +181,7 @@ exports.adminResponse = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      },
-      {
-        path: "serviceId",
-        model: "Service",
-        select: "serviceName",
-      },
+      }
     ]);
 
     res.status(200).json({

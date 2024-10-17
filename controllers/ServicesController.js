@@ -21,8 +21,16 @@ exports.createService = async (req, res) => {
       status,
       priceStatus,
     } = req.body;
-    console.log(req.body);
-    const thumbnail = req.files.thumbnail;
+
+    // Handle file upload
+    let thumbnailImage;
+    if (req.files && req.files.thumbnail) {
+      thumbnailImage = await uploadImageToCloudinary(
+        req.files.thumbnail,
+        process.env.FOLDER_NAME,
+        serviceName
+      );
+    }
 
     // Validate the input
     if (
@@ -31,29 +39,13 @@ exports.createService = async (req, res) => {
       !price ||
       !subCategoryId ||
       !categoryId ||
-      !thumbnail
+      !thumbnailImage
     ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required ",
+        message: "Missing required fields",
       });
     }
-
-    if (!status || status === undefined) {
-      status = "Draft";
-    }
-
-    if (!priceStatus || priceStatus === undefined) {
-      priceStatus = "priced";
-    }
-
-    const thumbnailImage = await uploadImageToCloudinary(
-      thumbnail,
-      process.env.FOLDER_NAME,
-      serviceName
-    );
-
-    console.log(thumbnailImage);
 
     // Create a new Service
     const newService = await Service.create({
@@ -62,8 +54,8 @@ exports.createService = async (req, res) => {
       timeToComplete,
       price,
       warranty,
-      status,
-      priceStatus,
+      status: status || "Draft",
+      priceStatus: priceStatus || "priced",
       thumbnail: thumbnailImage.secure_url,
       categoryId,
       subCategoryId,
@@ -83,7 +75,7 @@ exports.createService = async (req, res) => {
         path: "service",
       })
       .exec();
-    console.log(updatedSubCategory);
+    console.log("updatedSubCategory", updatedSubCategory);
     res.status(201).json({
       success: true,
       message: "Service created successfully",
@@ -91,6 +83,7 @@ exports.createService = async (req, res) => {
       updatedSubCategory,
     });
   } catch (error) {
+    console.error("Error creating service:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
