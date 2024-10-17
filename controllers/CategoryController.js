@@ -1,7 +1,7 @@
 const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
-
+const { createSlug } = require("../utils/slugUtils");
 // Create a new category
 exports.createCategory = async (req, res) => {
   try {
@@ -32,7 +32,7 @@ exports.createCategory = async (req, res) => {
     console.log(image);
 
     // Create new category
-    const slugName = name.toLowerCase().replace(/\s+/g, '-');
+    const slugName = createSlug(name);
     const CategoryDetails = await Category.create({
       name,
       slugName,

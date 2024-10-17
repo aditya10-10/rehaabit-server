@@ -28,7 +28,9 @@ exports.addToCart = async (req, res) => {
   try {
     const { serviceId, serviceName, serviceDescription, price, qty } = req.body;
     const userId = req.user.id;
-
+    // console.log(req.body);
+    // console.log(userId);
+    // console.log("serviceId", serviceId);
     if (!serviceId) {
       return res
         .status(400)
@@ -50,6 +52,8 @@ exports.addToCart = async (req, res) => {
     } else {
       cart = await Cart.findById(cart._id);
     }
+
+    // console.log(cart.services);
 
     const existingService = cart.services.find(
       (item) => item.serviceId.toString() === serviceId

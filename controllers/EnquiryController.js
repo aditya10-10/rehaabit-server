@@ -21,7 +21,7 @@ exports.createEnquiry = async (req, res) => {
   try {
     let { firstName, lastName, email, contactNumber, serviceName, query } =
       req.body;
-
+    console.log({ firstName, lastName, email, contactNumber, serviceName, query });
     if (typeof contactNumber === "number") {
       contactNumber = contactNumber.toString();
     }
