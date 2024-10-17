@@ -1,5 +1,7 @@
 const Contact = require("../models/Contact");
-const { contactUsEmail } = require("../templates/Contact");
+const {
+  newContactSubmissionEmail,
+} = require("../templates/newContactSubmissionEmail");
 const mailSender = require("../utils/mailSender");
 const { generateContactId } = require("../utils/generateId");
 
@@ -57,15 +59,8 @@ exports.contactUsController = async (req, res) => {
     // Send confirmation email
     await mailSender(
       email,
-      "Your message has been received",
-      contactUsEmail(
-        email,
-        firstName,
-        lastName,
-        message,
-        formattedPhoneNumber,
-        subject
-      )
+      "We've Received Your Message! Our Team is Ready to Assist You 💬",
+      newContactSubmissionEmail(firstName, caseId, subject)
     );
 
     newContact.save();
@@ -152,7 +147,8 @@ exports.getContactByIdController = async (req, res) => {
 
 // 4. Update contact status, priority, assignment, and notes (admin only)
 exports.updateContactStatusAndAssignmentController = async (req, res) => {
-  const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } = req.body;
+  const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } =
+    req.body;
 
   console.log(id, caseId, newStatus, newPriority, assignedAdmin, adminNotes);
 
@@ -214,7 +210,6 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
   }
 };
 
-
 // 5. Admin responds to contact (logs response and updates status)
 exports.adminResponseController = async (req, res) => {
   const { id, adminId, response, newStatus, newPriority } = req.body;
@@ -274,15 +269,15 @@ exports.adminResponseController = async (req, res) => {
 
     // Save the updated contact
     await contact.save();
-   const populatedContact = await Contact.findById(contact._id).populate({
+    const populatedContact = await Contact.findById(contact._id).populate({
       path: "assignedAdmin",
       model: "User",
       populate: {
         path: "additionalDetails",
         select: "firstName lastName",
         model: "Profile",
-      }
-   })
+      },
+    });
     return res.status(200).json({
       success: true,
       message: "Admin response added successfully",

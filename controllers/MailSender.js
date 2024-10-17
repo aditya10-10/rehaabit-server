@@ -1,6 +1,6 @@
 const express = require("express");
 const mailSender = require("../utils/mailSender");
-const { welcomeEmail } = require("../templates/mailTemplate");
+const { welcomeEmail } = require("../templates/welcomeMail");
 const { emailOTP } = require("../templates/EmailOTPTemplate");
 const User = require("../models/User");
 const EmailOTP = require("../models/EmailOTP");
@@ -35,7 +35,7 @@ exports.sendEmail = async (req, res) => {
     try {
       const emailResponse = await mailSender(
         email,
-        "Welcome to Rahaabit!",
+        "Welcome Aboard! Discover Top Home Services with Rehaabit",
         welcomeEmail()
       );
       console.log("Email sent successfully:", emailResponse.response);
@@ -73,8 +73,8 @@ exports.sendEmailOTP = async (req, res) => {
     try {
       const emailResponse = await mailSender(
         email,
-        "Welcome to Rahaabit!",
-        emailOTP(otpInstance.otp)
+        "Confirm Your Email Address with This OTP",
+        emailOTP(otp)
       );
       console.log("Email sent successfully:", emailResponse.response);
     } catch (error) {
