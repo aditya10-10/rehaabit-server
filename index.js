@@ -21,6 +21,7 @@ const partnerRoutes = require("./routes/Partner");
 const careersRoutes = require("./routes/Careers");
 const ratingAndreviewsRoutes = require("./routes/RatingAndReviews");
 const enquiryRoutes = require("./routes/Enquiry");
+const locationRoutes = require("./routes/Location");
 
 // Connect to Cloudinary
 const database = require("./config/database");
@@ -65,6 +66,7 @@ app.use("/api/v1", partnerRoutes);
 app.use("/api/v1", careersRoutes);
 app.use("/api/v1", ratingAndreviewsRoutes);
 app.use("/api/v1", enquiryRoutes);
+app.use("/api/v1", locationRoutes);
 
 // Default route
 app.get("/", (req, res) => {
