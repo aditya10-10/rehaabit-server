@@ -13,6 +13,12 @@ const categorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  metaTitle: {
+    type: String,
+  },
+  metaDescription: {
+    type: String,
+  },
   subCategory: [
     {
       type: mongoose.Schema.Types.ObjectId,

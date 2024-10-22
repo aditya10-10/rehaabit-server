@@ -17,6 +17,12 @@ const subCategorySchema = new mongoose.Schema({
       ref: "Service",
     },
   ],
+  metaTitle: {
+    type: String,
+  },
+  metaDescription: {
+    type: String,
+  },
 });
 
 // Export the Tags model

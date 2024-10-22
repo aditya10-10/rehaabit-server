@@ -20,6 +20,8 @@ exports.createService = async (req, res) => {
       warranty,
       status,
       priceStatus,
+      metaTitle,
+      metaDescription,
     } = req.body;
 
     // Handle file upload
@@ -59,6 +61,8 @@ exports.createService = async (req, res) => {
       thumbnail: thumbnailImage.secure_url,
       categoryId,
       subCategoryId,
+      metaTitle,
+      metaDescription,
     });
 
     // Add the new SubCategory to the Category's content array
@@ -104,6 +108,8 @@ exports.editService = async (req, res) => {
       warranty,
       status,
       priceStatus,
+      metaTitle,
+      metaDescription,
     } = req.body;
 
     const thumbnail = req.files ? req.files.thumbnail : null;
@@ -124,6 +130,8 @@ exports.editService = async (req, res) => {
       warranty,
       status,
       priceStatus,
+      metaTitle,
+      metaDescription,
     };
 
     if (thumbnail) {
