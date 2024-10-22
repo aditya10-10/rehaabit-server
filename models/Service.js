@@ -23,6 +23,12 @@ const servicesSchema = new mongoose.Schema({
   warranty: {
     type: String,
   },
+  metaTitle: {
+    type: String,
+  },
+  metaDescription: {
+    type: String,
+  },  
   howDoesItWorks: [
     {
       type: mongoose.Schema.Types.ObjectId,

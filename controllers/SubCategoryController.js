@@ -6,7 +6,7 @@ const { uploadImageToCloudinary } = require("../utils/imageUploader");
 exports.createSubCategory = async (req, res) => {
   try {
     // Extract the required properties from the request body
-    const { subCategoryName, categoryId } = req.body;
+    const { subCategoryName, categoryId, metaTitle, metaDescription } = req.body;
     const icon = req.files.icon;
 
     // Validate the input
@@ -30,6 +30,8 @@ exports.createSubCategory = async (req, res) => {
       subCategoryName,
       icon: image.secure_url,
       categoryId,
+      metaTitle,
+      metaDescription,
     });
 
     // Add the new SubCategory to the Category's content array

@@ -5,7 +5,7 @@ const { createSlug } = require("../utils/slugUtils");
 // Create a new category
 exports.createCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, metaTitle, metaDescription } = req.body;
     const icon = req.files.icon;
 
     // Validate input
@@ -37,6 +37,8 @@ exports.createCategory = async (req, res) => {
       name,
       slugName,
       icon: image.secure_url,
+      metaTitle,
+      metaDescription,
       subCategory: [],
     });
 
