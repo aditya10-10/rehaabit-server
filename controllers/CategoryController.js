@@ -6,7 +6,11 @@ const { createSlug } = require("../utils/slugUtils");
 exports.createCategory = async (req, res) => {
   try {
     const { name, metaTitle, metaDescription } = req.body;
+    // console.log("Request body:", req.body);
     const icon = req.files.icon;
+
+    // Handle metaKeywords specifically
+    const metaKeywords = req.body['metaKeywords[]'] || [];
 
     // Validate input
     if (!name) {
@@ -29,7 +33,7 @@ exports.createCategory = async (req, res) => {
       1000,
       1000
     );
-    console.log(image);
+    // console.log("Uploaded image:", image);
 
     // Create new category
     const slugName = createSlug(name);
@@ -39,10 +43,11 @@ exports.createCategory = async (req, res) => {
       icon: image.secure_url,
       metaTitle,
       metaDescription,
+      metaKeywords: Array.isArray(metaKeywords) ? metaKeywords : [metaKeywords],
       subCategory: [],
     });
 
-    console.log("Category Created:", CategoryDetails);
+    // console.log("Category Created:", CategoryDetails);
     return res.status(201).json({
       success: true,
       message: "Category created successfully",
@@ -101,7 +106,7 @@ exports.updateCategoryName = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    console.log("Category Name Updated:", category);
+    // console.log("Category Name Updated:", category);
     return res.status(200).json({
       success: true,
       message: "Category name updated successfully",

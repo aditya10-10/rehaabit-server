@@ -45,7 +45,7 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: "https://www.rehaabit.com", // specify your frontend domain here
+  origin: ["https://www.rehaabit.com", "http://localhost:3000"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // allow cookies or other credentials
   optionsSuccessStatus: 204,

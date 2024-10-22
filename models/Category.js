@@ -19,6 +19,10 @@ const categorySchema = new mongoose.Schema({
   metaDescription: {
     type: String,
   },
+  metaKeywords: [{
+      type: String,
+    },
+  ],
   subCategory: [
     {
       type: mongoose.Schema.Types.ObjectId,
