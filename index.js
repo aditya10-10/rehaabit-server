@@ -36,12 +36,23 @@ database.connect();
 // Apply middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+
+// CORS
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://rehaabit-server.onrender.com",
+];
+
+const corsOptions = {
+  origin: "https://www.rehaabit.com", // specify your frontend domain here
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // allow cookies or other credentials
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
 app.use(
   fileUpload({
     useTempFiles: true,
