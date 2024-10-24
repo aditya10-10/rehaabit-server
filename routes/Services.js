@@ -14,6 +14,7 @@ const {
   getAllPublishedServices,
   getAllNoPricedPublishedServices,
   getTotalServicesCount,
+  getServiceRatingAndReviews,
 } = require("../controllers/ServicesController");
 
 // Categories Controllers Import
@@ -118,6 +119,8 @@ router.put("/editService", auth, isAdmin, editService);
 router.delete("/deleteService", auth, isAdmin, deleteService);
 
 router.post("/getFullServiceDetails", getFullServiceDetails);
+
+router.get("/getServiceRatingAndReviews", getServiceRatingAndReviews);
 
 router.get("/getAllServices", getAllServices);
 
