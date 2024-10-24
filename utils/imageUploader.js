@@ -5,24 +5,30 @@ exports.uploadImageToCloudinary = async (file, folder, serviceName) => {
   const tempFilePath = file.tempFilePath;
   const maxSizeKB = 80;
   // Check if the file is an image
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    throw new Error('Invalid file type. Only images are allowed.');
+    throw new Error("Invalid file type. Only images are allowed.");
   }
-  
+
   // Check file size
   const { size } = await fs.stat(tempFilePath);
   const fileSizeInKB = size / 1024;
 
   if (fileSizeInKB > maxSizeKB) {
-    throw new Error('File size must be less than 80KB');
+    throw new Error("File size must be less than 80KB");
   }
 
-  const options = { 
-    folder, 
+  const options = {
+    folder,
     resource_type: "auto",
-    format: "webp", // Force WebP format
-    context: `alt=${serviceName}`
+    context: `alt=${serviceName}`,
   };
   const result = await cloudinary.uploader.upload(tempFilePath, options);
 
