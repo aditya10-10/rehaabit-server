@@ -422,3 +422,48 @@ exports.getTotalServicesCount = async (req, res) => {
     });
   }
 };
+
+// Get the rating and reviews for the service
+exports.getServiceRatingAndReviews = async (req, res) => {
+  try {
+    const { serviceId, page = 1 } = req.query;
+    const service = await Service.findById(serviceId).populate({
+      path: "ratingAndReviews",
+      populate: {
+        path: "user",
+        select: "firstName lastName",
+        model: "User",
+        populate: {
+            path: "additionalDetails",
+            select: "firstName lastName",
+            model: "Profile",
+          },
+        },
+    });
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+    const ratingAndReviews = service.ratingAndReviews;
+    const itemsPerPage = 5;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, ratingAndReviews.length);
+    const paginatedRatingAndReviews = ratingAndReviews.slice(startIndex, endIndex);
+    console.log(paginatedRatingAndReviews);
+    return res.status(200).json({
+      success: true,
+      data: paginatedRatingAndReviews,
+      totalRatingAndReviews: ratingAndReviews.length,
+    });
+  } catch (error) {
+    console.error("Error fetching service rating and reviews:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
