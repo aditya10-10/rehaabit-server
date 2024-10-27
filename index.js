@@ -74,9 +74,9 @@ app.use("/api/v1", addressRoutes);
 app.use("/api/v1", orderRoutes);
 app.use("/api/v1", paymentRoutes);
 app.use("/api/v1", partnerRoutes);
-app.use("/api/v1", careersRoutes);
 app.use("/api/v1", ratingAndreviewsRoutes);
 app.use("/api/v1", enquiryRoutes);
+app.use("/api/v1/carrer", careersRoutes);
 app.use("/api/v1", locationRoutes);
 
 // Default route
