@@ -3,6 +3,7 @@ const fileUpload = require("express-fileupload");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const morgan = require("morgan");
 
 // Load environment variables for development
 dotenv.config();
@@ -36,7 +37,7 @@ database.connect();
 // Apply middleware
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(morgan("tiny"));
 // CORS
 
 const allowedOrigins = [
