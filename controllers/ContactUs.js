@@ -150,7 +150,7 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
   const { id, caseId, newStatus, newPriority, assignedAdmin, adminNotes } =
     req.body;
 
-  console.log(id, caseId, newStatus, newPriority, assignedAdmin, adminNotes);
+  // console.log(id, caseId, newStatus, newPriority, assignedAdmin, adminNotes);
 
   try {
     // Find the contact by id
@@ -214,13 +214,13 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
 exports.adminResponseController = async (req, res) => {
   const { id, adminId, response, newStatus, newPriority } = req.body;
 
-  console.log("Received Data:", {
-    id,
-    adminId,
-    response,
-    newStatus,
-    newPriority,
-  }); // Debug log
+  // console.log("Received Data:", {
+  //   id,
+  //   adminId,
+  //   response,
+  //   newStatus,
+  //   newPriority,
+  // }); // Debug log
 
   if (!id || !adminId || !response) {
     return res.status(400).json({

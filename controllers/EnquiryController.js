@@ -21,7 +21,7 @@ exports.createEnquiry = async (req, res) => {
   try {
     let { firstName, lastName, email, contactNumber, serviceName, query } =
       req.body;
-    console.log({ firstName, lastName, email, contactNumber, serviceName, query });
+    // console.log({ firstName, lastName, email, contactNumber, serviceName, query });
     if (typeof contactNumber === "number") {
       contactNumber = contactNumber.toString();
     }
@@ -51,7 +51,7 @@ exports.createEnquiry = async (req, res) => {
       contactUsEmail(email, firstName, lastName, contactNumber, query)
     );
 
-    console.log("Email Response:", emailRes);
+    // console.log("Email Response:", emailRes);
 
     res.status(201).json({
       message: "Enquiry submitted successfully",
@@ -136,7 +136,7 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
       }
     ]);
 
-    console.log("populatedEnquiry", populatedEnquiry);
+    // console.log("populatedEnquiry", populatedEnquiry);
     res.status(200).json({
       message: "Enquiry updated successfully",
       data: populatedEnquiry,
@@ -149,7 +149,7 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
 // Admin route for responding to enquiries
 exports.adminResponse = async (req, res) => {
   const { id, adminId, response } = req.body;
-  console.log({ id, adminId, response });
+  // console.log({ id, adminId, response });
   if (!id || !adminId || !response) {
     return res.status(400).json({
       success: false,

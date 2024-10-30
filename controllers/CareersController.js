@@ -16,11 +16,11 @@ exports.addCandidateInformation = async (req, res) => {
       return res.status(400).json({ message: "Resume file is required." });
     }
 
-    console.log("File received:", file); // Log the received file to verify
+    // console.log("File received:", file); // Log the received file to verify
 
     // Upload resume to Cloudinary
     const result = await uploadImageToCloudinary(file, process.env.FOLDER_NAME);
-    console.log("File uploaded to Cloudinary:", result);
+    // console.log("File uploaded to Cloudinary:", result);
 
     // Create a new candidate entry in the database
     const newCareer = new Careers({
@@ -35,7 +35,7 @@ exports.addCandidateInformation = async (req, res) => {
     // Delete the temp file after upload to Cloudinary
     await fs.unlink(file.tempFilePath);
 
-    console.log("Successfully uploaded resume:", result.secure_url);
+    // console.log("Successfully uploaded resume:", result.secure_url);
 
     res.status(201).json({
       message: "Candidate information submitted successfully.",

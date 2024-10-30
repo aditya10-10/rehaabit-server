@@ -118,7 +118,7 @@ exports.updateCart = async (req, res) => {
       cart = await Cart.findById(cart._id);
     }
 
-    console.log(cartServiceId);
+    // console.log(cartServiceId);
 
     const service = cart.services.find(
       (item) => item._id.toString() === cartServiceId

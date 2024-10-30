@@ -142,7 +142,7 @@ exports.updateCategoryIcon = async (req, res) => {
       1000
     );
 
-    console.log(image);
+    // console.log(image);
 
     // Update the category icon
     const category = await Category.findByIdAndUpdate(
