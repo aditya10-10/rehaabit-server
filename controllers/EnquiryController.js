@@ -133,7 +133,7 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      }
+      },
     ]);
 
     // console.log("populatedEnquiry", populatedEnquiry);
@@ -180,7 +180,7 @@ exports.adminResponse = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      }
+      },
     ]);
 
     res.status(200).json({

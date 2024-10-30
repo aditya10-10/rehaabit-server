@@ -119,7 +119,7 @@ exports.enquiryClosedEmail = (enquiryId, serviceName) => {
               </div>
   
               <!-- Contact Section -->
-              <a href="mailto:support@rehaabit.com"class="cta-button">Contact Support</a>
+              <a href="https://www.rehaabit.com/contact-us"class="cta-button">Contact Support</a>
   
               <!-- Footer Section -->
               <div class="footer">
