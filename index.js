@@ -47,9 +47,9 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: [
-    "https://rehaabit.com", // Allow the main domain
-    "https://www.rehaabit.com", // Allow the www subdomain
-    "http://localhost:3000", // Allow local development
+    "https://rehaabit.com",
+    "https://www.rehaabit.com",
+    "http://localhost:3000",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // allow cookies or other credentials
