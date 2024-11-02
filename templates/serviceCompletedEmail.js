@@ -147,7 +147,7 @@ exports.serviceCompletedEmail = (serviceName, ratingLink) => {
                 <div class="highlight">
                     <h3>We Value Your Feedback!</h3>
                     <p>We’d love to hear how your experience was. Please take a moment to rate the service and share your thoughts with us.</p>
-                    <a href="${ratingLink}" class="cta-button">Rate the Service</a>
+                    <a href="https://www.rehaabit.com/dashboard/orders" class="cta-button">Rate the Service</a>
                 </div>
       
                 <!-- Footer Section -->

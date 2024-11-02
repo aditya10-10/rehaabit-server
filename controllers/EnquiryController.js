@@ -21,7 +21,7 @@ exports.createEnquiry = async (req, res) => {
   try {
     let { firstName, lastName, email, contactNumber, serviceName, query } =
       req.body;
-    console.log({ firstName, lastName, email, contactNumber, serviceName, query });
+    // console.log({ firstName, lastName, email, contactNumber, serviceName, query });
     if (typeof contactNumber === "number") {
       contactNumber = contactNumber.toString();
     }
@@ -51,7 +51,7 @@ exports.createEnquiry = async (req, res) => {
       contactUsEmail(email, firstName, lastName, contactNumber, query)
     );
 
-    console.log("Email Response:", emailRes);
+    // console.log("Email Response:", emailRes);
 
     res.status(201).json({
       message: "Enquiry submitted successfully",
@@ -79,7 +79,6 @@ exports.getAllEnquiries = async (req, res) => {
         },
       ])
       .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
-
     res.status(200).json({ data: enquiries });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch enquiries", error });
@@ -134,10 +133,10 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      }
+      },
     ]);
 
-    console.log("populatedEnquiry", populatedEnquiry);
+    // console.log("populatedEnquiry", populatedEnquiry);
     res.status(200).json({
       message: "Enquiry updated successfully",
       data: populatedEnquiry,
@@ -150,7 +149,7 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
 // Admin route for responding to enquiries
 exports.adminResponse = async (req, res) => {
   const { id, adminId, response } = req.body;
-  console.log({ id, adminId, response });
+  // console.log({ id, adminId, response });
   if (!id || !adminId || !response) {
     return res.status(400).json({
       success: false,
@@ -181,7 +180,7 @@ exports.adminResponse = async (req, res) => {
           select: "firstName lastName",
           model: "Profile",
         },
-      }
+      },
     ]);
 
     res.status(200).json({

@@ -49,6 +49,9 @@ exports.sendOTP = async (req, res) => {
 
     console.log(process.env.ADMIN_PHONE_NUMBER, process.env.USER_PHONE_NUMBER);
 
+    // Delete any old OTPs for this number
+    await OTP.deleteMany({ contactNumber: formattedPhoneNumber });
+
     // Generate OTP
     const otp =
       formattedPhoneNumber === `${process.env.ADMIN_PHONE_NUMBER}` ||
@@ -122,9 +125,22 @@ exports.signup = async (req, res) => {
 
       // Delete the OTP after successful verification
       await OTP.deleteOne({ _id: latestOTP._id });
+      const token = jwt.sign(
+        { contactNumber: user.contactNumber, id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "9999y",
+        }
+      );
+      const options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+      };
+      res.cookie("token", token, options);
 
       return res.status(200).json({
         success: true,
+        token,
         user,
         message: "User registered successfully",
       });

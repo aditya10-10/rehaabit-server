@@ -121,7 +121,7 @@ router.delete("/deleteService", auth, isAdmin, deleteService);
 router.post("/getFullServiceDetails", getFullServiceDetails);
 
 router.get("/getServiceRatingAndReviews", getServiceRatingAndReviews);
-
+  
 router.get("/getAllServices", getAllServices);
 
 router.get("/getAllPublishedServices", getAllPublishedServices);

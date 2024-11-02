@@ -3,6 +3,7 @@ const fileUpload = require("express-fileupload");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const morgan = require("morgan");
 
 // Load environment variables for development
 dotenv.config();
@@ -36,7 +37,7 @@ database.connect();
 // Apply middleware
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(morgan("tiny"));
 // CORS
 
 const allowedOrigins = [
@@ -45,7 +46,11 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: ["https://www.rehaabit.com", "http://localhost:3000"],
+  origin: [
+    "https://rehaabit.com",
+    "https://www.rehaabit.com",
+    "http://localhost:3000",
+  ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // allow cookies or other credentials
   optionsSuccessStatus: 204,
@@ -74,9 +79,9 @@ app.use("/api/v1", addressRoutes);
 app.use("/api/v1", orderRoutes);
 app.use("/api/v1", paymentRoutes);
 app.use("/api/v1", partnerRoutes);
-app.use("/api/v1", careersRoutes);
 app.use("/api/v1", ratingAndreviewsRoutes);
 app.use("/api/v1", enquiryRoutes);
+app.use("/api/v1/carrer", careersRoutes);
 app.use("/api/v1", locationRoutes);
 
 // Default route

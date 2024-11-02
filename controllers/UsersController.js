@@ -261,7 +261,7 @@ exports.createNewUser = async (req, res) => {
 // UsersController.js
 exports.getUserCount = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments({ accountType: "User" });
     // console.log(totalUsers);
     res.json({ totalUsers });
   } catch (error) {
