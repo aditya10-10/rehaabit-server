@@ -22,6 +22,8 @@
     "express": "^4.19.2",
     "express-fileupload": "^1.5.0",
     "fast-two-sms": "^3.0.0",
+    "firebase": "^11.0.1",
+    "firebase-admin": "^12.7.0",
     "fs": "^0.0.1-security",
     "google-libphonenumber": "^3.2.34",
     "jsonwebtoken": "^9.0.2",

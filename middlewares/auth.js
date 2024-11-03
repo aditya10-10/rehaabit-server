@@ -102,3 +102,22 @@ exports.isPartner = async (req, res, next) => {
       .json({ success: false, message: `User Role Can't be Verified` });
   }
 };
+exports.isContentWriter = async (req, res, next) => {
+  try {
+    const userDetails = await User.findOne({
+      contactNumber: req.user.contactNumber,
+    });
+
+    if (userDetails.accountType !== "Content Writer") {
+      return res.status(401).json({
+        success: false,
+        message: "This is a Protected Route for Content Writer",
+      });
+    }
+    next();
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: `User Role Can't be Verified` });
+  }
+};

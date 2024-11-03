@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const morgan = require("morgan");
 
+
 // Load environment variables for development
 dotenv.config();
 
@@ -23,6 +24,7 @@ const careersRoutes = require("./routes/Careers");
 const ratingAndreviewsRoutes = require("./routes/RatingAndReviews");
 const enquiryRoutes = require("./routes/Enquiry");
 const locationRoutes = require("./routes/Location");
+const blogRoutes = require("./routes/Blog");
 
 // Connect to Cloudinary
 const database = require("./config/database");
@@ -33,6 +35,7 @@ const PORT = process.env.PORT || 4000;
 
 // Connect to the database
 database.connect();
+// Initialize FirebaseAdmin
 
 // Apply middleware
 app.use(express.json());
@@ -83,6 +86,7 @@ app.use("/api/v1", ratingAndreviewsRoutes);
 app.use("/api/v1", enquiryRoutes);
 app.use("/api/v1/carrer", careersRoutes);
 app.use("/api/v1", locationRoutes);
+app.use("/api/v1", blogRoutes);
 
 // Default route
 app.get("/", (req, res) => {
