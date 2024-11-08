@@ -1,21 +1,19 @@
 const db = require("../config/firebaseSetUp");
 require("../config/firebaseSetUp");
 const admin = require("firebase-admin");
-const { createSlug } = require("../utils/slugUtils");
 const blogsCollection = db.collection('blogs');
 
 exports.createBlog = async (req, res) => {
   try {
-    const { title, metaTitle, metaDescription, author, content } = req.body;
-    if (!title || !metaTitle || !metaDescription || !author || !content) {
+    const { slug, title, metaDescription, author, content } = req.body;
+    if (!slug || !title || !metaDescription || !author || !content) {
       return res.status(400).json({
         success: false,
         message: "All Fields are Required",
       });
     }
-    const generatedSlug = createSlug(title);
     // Check for existing blog
-    const existingBlog = await blogsCollection.where('slug', '==', generatedSlug).get();
+    const existingBlog = await blogsCollection.where('slug', '==', slug).get();
     if (!existingBlog.empty) {
       return res.status(400).json({
         success: false,
@@ -25,9 +23,9 @@ exports.createBlog = async (req, res) => {
 
     // Create new blog
     const blogData = {
-      slug: generatedSlug,
+      slug,
       title,
-      metaTitle,
+      metaTitle: title,
       metaDescription,
       author,
       content,
@@ -56,12 +54,13 @@ exports.createBlog = async (req, res) => {
 exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, metaTitle, metaDescription, author, content } = req.body;
+    const { slug, title, metaDescription, author, content } = req.body;
     
     const blogRef = blogsCollection.doc(id);
     await blogRef.update({
+      slug,
       title,
-      metaTitle,
+      metaTitle: title,
       metaDescription,
       author,
       content,
@@ -90,7 +89,7 @@ exports.getBlogs = async (req, res) => {
     blogsSnapshot.forEach(doc => {
       blogs.push({ id: doc.id, ...doc.data() });
     });
-    
+    console.log(blogs);
     return res.status(200).json({
       success: true,
       message: "Blogs Fetched Successfully",
@@ -124,8 +123,9 @@ exports.deleteBlog = async (req, res) => {
 exports.getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    // console.log("slug",slug);
     const blogSnapshot = await blogsCollection.where('slug', '==', slug).get();
-    
+    // console.log("blogSnapshot",blogSnapshot);  
     if (blogSnapshot.empty) {
       return res.status(404).json({
         success: false,
@@ -135,7 +135,7 @@ exports.getBlogBySlug = async (req, res) => {
 
     const blogDoc = blogSnapshot.docs[0];
     const blog = { id: blogDoc.id, ...blogDoc.data() };
-    
+    console.log("blog",blog);
     return res.status(200).json({
       success: true,
       message: "Blog Fetched Successfully",
@@ -178,10 +178,11 @@ exports.getBlogById = async (req, res) => {
 
 exports.publishBlog = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
+    console.log(id);
     const blogRef = blogsCollection.doc(id);
     const blogDoc = await blogRef.get();
-    
+    console.log(blogDoc);
     if (!blogDoc.exists) {
       return res.status(404).json({
         success: false,

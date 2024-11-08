@@ -2,6 +2,8 @@ const Contact = require("../models/Contact");
 const {
   newContactSubmissionEmail,
 } = require("../templates/newContactSubmissionEmail");
+
+const { contactResolvedEmail } = require("../templates/contactResolvedEmail");
 const mailSender = require("../utils/mailSender");
 const { generateContactId } = require("../utils/generateId");
 
@@ -166,6 +168,12 @@ exports.updateContactStatusAndAssignmentController = async (req, res) => {
     if (newStatus) {
       contact.status = newStatus;
       if (newStatus === "resolved") {
+        // Send confirmation email
+        await mailSender(
+          contact.email,
+          "Your Issue has been Resolved ✔️",
+          contactResolvedEmail(caseId, contact.firstName, contact.subject)
+        );
         contact.resolvedAt = Date.now();
       }
     }

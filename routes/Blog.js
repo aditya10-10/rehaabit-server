@@ -8,7 +8,7 @@ const { createBlog, getBlogs, updateBlog, deleteBlog, getBlogBySlug, getBlogById
 
 router.post("/createBlog", auth, isContentWriter, createBlog);
 router.put("/updateBlog/:id", auth, isContentWriter, updateBlog);
-router.put("/publishBlog/:id", auth, isAdmin, publishBlog);
+router.put("/publishBlog", auth, isAdmin, publishBlog);
 router.delete("/deleteBlog/:id", auth, isAdmin, deleteBlog);
 router.get("/blogs", getBlogs);
 router.get("/blog/slug/:slug", getBlogBySlug);
