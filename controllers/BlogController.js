@@ -53,10 +53,17 @@ exports.createBlog = async (req, res) => {
 
 exports.updateBlog = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { slug, title, metaDescription, author, content } = req.body;
-    
+    const {id, slug, title, metaDescription, author, content } = req.body;
     const blogRef = blogsCollection.doc(id);
+    const blogDoc = await blogRef.get();
+    
+    if (!blogDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog Not Found",
+      });
+    }
+    
     await blogRef.update({
       slug,
       title,
@@ -75,6 +82,7 @@ exports.updateBlog = async (req, res) => {
       blog: { id: updatedBlog.id, ...updatedBlog.data() },
     });
   } catch (error) {
+    console.error(error);  
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
