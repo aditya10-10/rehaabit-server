@@ -187,10 +187,9 @@ exports.getBlogById = async (req, res) => {
 exports.publishBlog = async (req, res) => {
   try {
     const { id } = req.body;
-    console.log(id);
     const blogRef = blogsCollection.doc(id);
     const blogDoc = await blogRef.get();
-    console.log(blogDoc);
+
     if (!blogDoc.exists) {
       return res.status(404).json({
         success: false,
@@ -198,8 +197,12 @@ exports.publishBlog = async (req, res) => {
       });
     }
 
+    // Get current status and toggle it
+    const currentStatus = blogDoc.data().status;
+    const newStatus = currentStatus === 'draft' ? 'published' : 'draft';
+
     await blogRef.update({ 
-      status: 'published',
+      status: newStatus,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -207,7 +210,7 @@ exports.publishBlog = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      message: "Blog Published Successfully",
+      message: `Blog ${newStatus === 'published' ? 'Published' : 'UnPublished'} Successfully`,
       blog: { id: updatedBlog.id, ...updatedBlog.data() },
     });
   } catch (error) {
