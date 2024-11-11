@@ -43,7 +43,6 @@ exports.createBlog = async (req, res) => {
       blog,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error"
@@ -100,7 +99,7 @@ exports.getBlogs = async (req, res) => {
     // Get total count
     const totalSnapshot = await query.get();
     const totalCount = totalSnapshot.size;
-      
+
     // Get paginated data
     const blogsSnapshot = await query
       .limit(limit)
@@ -120,6 +119,57 @@ exports.getBlogs = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getPublishedBlogs = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    // Create query for published blogs
+    let query = blogsCollection
+      .where('status', '==', 'published');
+
+    // Get total count first
+    const totalSnapshot = await query.get();
+    const totalCount = totalSnapshot.size;
+
+    // If no published blogs, return early
+    if (totalCount === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No Published Blogs Found",
+        blogs: [],
+        totalCount: 0,
+        currentPage: page,
+      });
+    }
+
+    // Get paginated data
+    const blogsSnapshot = await query
+      .limit(limit)
+      .offset((page - 1) * limit)
+      .get();
+
+    const blogs = blogsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Published Blogs Fetched Successfully",
+      blogs,
+      totalCount,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error in getPublishedBlogs:', error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -159,7 +209,6 @@ exports.getBlogBySlug = async (req, res) => {
 
     const blogDoc = blogSnapshot.docs[0];
     const blog = { id: blogDoc.id, ...blogDoc.data() };
-    console.log("blog",blog);
     return res.status(200).json({
       success: true,
       message: "Blog Fetched Successfully",
