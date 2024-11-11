@@ -92,16 +92,32 @@ exports.updateBlog = async (req, res) => {
 
 exports.getBlogs = async (req, res) => {
   try {
-    const blogsSnapshot = await blogsCollection.get();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    let query = blogsCollection.orderBy('createdAt', 'desc');
+
+    // Get total count
+    const totalSnapshot = await query.get();
+    const totalCount = totalSnapshot.size;
+      
+    // Get paginated data
+    const blogsSnapshot = await query
+      .limit(limit)
+      .offset((page - 1) * limit)
+      .get();
+
     const blogs = [];
     blogsSnapshot.forEach(doc => {
       blogs.push({ id: doc.id, ...doc.data() });
     });
-    console.log(blogs);
+
     return res.status(200).json({
       success: true,
       message: "Blogs Fetched Successfully",
       blogs,
+      totalCount,
+      currentPage: page,
     });
   } catch (error) {
     return res.status(500).json({
