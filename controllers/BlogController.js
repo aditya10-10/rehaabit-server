@@ -129,9 +129,8 @@ exports.getBlogs = async (req, res) => {
 exports.getPublishedBlogs = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 13;
     
-    // Create query for published blogs
     let query = blogsCollection
       .where('status', '==', 'published');
 
@@ -139,21 +138,13 @@ exports.getPublishedBlogs = async (req, res) => {
     const totalSnapshot = await query.get();
     const totalCount = totalSnapshot.size;
 
-    // If no published blogs, return early
-    if (totalCount === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No Published Blogs Found",
-        blogs: [],
-        totalCount: 0,
-        currentPage: page,
-      });
-    }
+    // Calculate the offset
+    const offset = (page - 1) * limit;
 
     // Get paginated data
     const blogsSnapshot = await query
       .limit(limit)
-      .offset((page - 1) * limit)
+      .offset(offset)
       .get();
 
     const blogs = blogsSnapshot.docs.map(doc => ({

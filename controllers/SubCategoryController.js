@@ -1,6 +1,7 @@
 const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const { redisClient } = require("../config/redisSetup");
 
 // CREATE a new SubCategory
 exports.createSubCategory = async (req, res) => {
@@ -48,7 +49,7 @@ exports.createSubCategory = async (req, res) => {
         path: "subCategory",
       })
       .exec();
-
+    await redisClient.del("subcategories");
     // Return the updated Category object in the response
     res.status(200).json({
       success: true,
@@ -97,7 +98,7 @@ exports.updateSubCategoryName = async (req, res) => {
     const updatedCategory = await Category.findById(categoryId)
       .populate("subCategory")
       .exec();
-
+    await redisClient.del("subcategories");
     res.status(200).json({
       success: true,
       message: "SubCategory name updated successfully",
@@ -155,7 +156,7 @@ exports.updateSubCategoryIcon = async (req, res) => {
     const updatedCategory = await Category.findById(categoryId)
       .populate("subCategory")
       .exec();
-
+    await redisClient.del("subcategories");
     res.status(200).json({
       success: true,
       message: "SubCategory icon updated successfully",
@@ -242,7 +243,7 @@ exports.deleteSubCategory = async (req, res) => {
     const updatedCategory = await Category.findById(categoryId)
       .populate("subCategory")
       .exec();
-
+    await redisClient.del("subcategories");
     res.status(200).json({
       success: true,
       message: "SubCategory deleted successfully",
@@ -262,8 +263,23 @@ exports.deleteSubCategory = async (req, res) => {
 exports.showAllSubCategories = async (req, res) => {
   try {
     console.log("Fetching all sub-categories");
+    const cachedSubCategories = await redisClient.get("subcategories"); 
+    if (cachedSubCategories) {
+      try {
+        const parsedSubCategories = typeof cachedSubCategories === 'object' 
+          ? cachedSubCategories 
+          : JSON.parse(cachedSubCategories);
+        return res.status(200).json({
+          success: true,
+          data: parsedSubCategories,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached sub-categories:", parseError);
+        await redisClient.del("subcategories");
+      }
+    }
     const allSubCategories = await SubCategory.find({});
-
+    await redisClient.set("subcategories", JSON.stringify(allSubCategories));
     return res.status(200).json({
       success: true,
       data: allSubCategories,
@@ -281,8 +297,23 @@ exports.showAllSubCategories = async (req, res) => {
 exports.showAllSubCategories = async (req, res) => {
   try {
     console.log("Fetching all subcategories");
+    const cachedSubCategories = await redisClient.get("subcategories"); 
+    if (cachedSubCategories) {
+      try {
+        const parsedSubCategories = typeof cachedSubCategories === 'object' 
+          ? cachedSubCategories 
+          : JSON.parse(cachedSubCategories);
+        return res.status(200).json({
+          success: true,
+          data: parsedSubCategories,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached sub-categories:", parseError);
+        await redisClient.del("subcategories");
+      }
+    }
     const allSubCategories = await SubCategory.find({});
-
+    await redisClient.set("subcategories", JSON.stringify(allSubCategories));
     return res.status(200).json({
       success: true,
       data: allSubCategories,
@@ -309,12 +340,26 @@ exports.getSubCategoriesByCategory = async (req, res) => {
           message: "Category ID is required",
       });
     }
-    
+    const cachedSubCategories = await redisClient.get(`subcategories:${categoryId}`); 
+    if (cachedSubCategories) {
+      try {
+        const parsedSubCategories = typeof cachedSubCategories === 'object' 
+          ? cachedSubCategories 
+          : JSON.parse(cachedSubCategories);
+        return res.status(200).json({
+          success: true,
+          data: parsedSubCategories,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached sub-categories:", parseError);
+        await redisClient.del(`subcategories:${categoryId}`);
+      }
+    }
     // Find the category and populate its subcategories
     const category = await Category.findOne({ slugName:categoryId }).populate(
       "subCategory"
     );
-
+    await redisClient.set(`subcategories:${categoryId}`, JSON.stringify(category.subCategory));
     if (!category) {
       return res.status(404).json({
         success: false,
