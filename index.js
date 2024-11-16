@@ -27,6 +27,7 @@ const blogRoutes = require("./routes/Blog");
 
 // Connect to Cloudinary
 const database = require("./config/database");
+const { connectRedis, redisClient } = require("./config/redisSetup");
 const { cloudinaryConnect } = require("./config/cloudinary");
 
 const app = express();
@@ -34,10 +35,15 @@ const PORT = process.env.PORT || 4000;
 
 // Connect to the database
 database.connect();
+connectRedis();
 // Initialize FirebaseAdmin
 
 // Apply middleware
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "50mb",
+  })
+);
 app.use(cookieParser());
 app.use(morgan("tiny"));
 // CORS

@@ -108,7 +108,7 @@ exports.isContentWriter = async (req, res, next) => {
       contactNumber: req.user.contactNumber,
     });
 
-    if (userDetails.accountType !== "Content Writer") {
+    if (userDetails.accountType !== "Content Writer" && userDetails.accountType !== "Admin") {
       return res.status(401).json({
         success: false,
         message: "This is a Protected Route for Content Writer",
