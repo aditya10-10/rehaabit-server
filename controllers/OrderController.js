@@ -210,15 +210,16 @@ exports.cancelOrder = async (req, res) => {
         message: "Order not found",
       });
     }
-  if(user.accountType!=='Admin'){
-    if (order.user.toString() !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized to cancel this order",
-      });
+    if (user.accountType !== "Admin") {
+      if (order.user.toString() !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "Unauthorized to cancel this order",
+        });
+      }
     }
-  }
-    const currentStatus = order.status.statuses[order.status.statuses.length - 1].status;
+    const currentStatus =
+      order.status.statuses[order.status.statuses.length - 1].status;
     if (
       currentStatus === "cancelled by customer" ||
       currentStatus === "cancelled by provider" ||
@@ -234,21 +235,26 @@ exports.cancelOrder = async (req, res) => {
     let refundAmount = order.totalCost;
 
     //Check Admin also can cancel the order
-    if (isProfessionalAssigned && user.accountType!=='Admin') {
+    if (isProfessionalAssigned && user.accountType !== "Admin") {
       const orderCreatedTime = new Date(order.createdAt);
       const currentTime = Date.now();
       const timeDiff = currentTime - orderCreatedTime;
       const threeHoursInMs = 3 * 60 * 60 * 1000;
 
       if (timeDiff > threeHoursInMs) {
-        const hoursAfterThree = Math.floor((timeDiff - threeHoursInMs) / (60 * 60 * 1000));
+        const hoursAfterThree = Math.floor(
+          (timeDiff - threeHoursInMs) / (60 * 60 * 1000)
+        );
         const deduction = hoursAfterThree * 50;
         refundAmount -= deduction;
 
         if (refundAmount < 0) refundAmount = 0;
       }
     }
-    const cancelText= user.accountType==='Admin'?'cancelled by provider':'cancelled by customer';
+    const cancelText =
+      user.accountType === "Admin"
+        ? "cancelled by provider"
+        : "cancelled by customer";
     const orderStatus = await OrderStatus.findById(order.status._id);
     orderStatus.statuses.push({ status: cancelText, updatedAt: Date.now() });
     await orderStatus.save();
@@ -270,7 +276,6 @@ exports.cancelOrder = async (req, res) => {
     });
   }
 };
-
 
 exports.getUserOrders = async (req, res) => {
   try {
@@ -432,7 +437,8 @@ exports.getPendingOrdersCount = async (req, res) => {
 
     // Filter orders where the last status in the statuses array is "pending"
     const pendingOrders = orders.filter((order) => {
-      const latestStatus = order.status.statuses[order.status.statuses.length - 1];
+      const latestStatus =
+        order.status.statuses[order.status.statuses.length - 1];
       return latestStatus.status === "pending";
     });
 
@@ -457,7 +463,6 @@ exports.getPendingOrdersCount = async (req, res) => {
     });
   }
 };
-
 
 // Controller to change order status by admin
 exports.changeOrderStatus = async (req, res) => {
@@ -530,4 +535,3 @@ exports.changeOrderStatus = async (req, res) => {
     });
   }
 };
-

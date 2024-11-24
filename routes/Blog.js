@@ -3,10 +3,18 @@ const router = express.Router();
 
 const { auth, isContentWriter, isAdmin } = require("../middlewares/auth");
 
-const { createBlog, getBlogs, updateBlog, deleteBlog, getBlogBySlug, getBlogById, publishBlog, getPublishedBlogs } = require("../controllers/BlogController.js");
+const {
+  createBlog,
+  getBlogs,
+  updateBlog,
+  deleteBlog,
+  getBlogBySlug,
+  getBlogById,
+  publishBlog,
+  getPublishedBlogs,
+} = require("../controllers/BlogController.js");
 
-
-router.post("/createBlog", auth, isContentWriter, createBlog);
+router.post("/createBlog", auth, isContentWriter, isAdmin, createBlog);
 router.put("/updateBlog", auth, isContentWriter, updateBlog);
 router.put("/publishBlog", auth, isAdmin, publishBlog);
 router.delete("/deleteBlog/:id", auth, isAdmin, deleteBlog);
