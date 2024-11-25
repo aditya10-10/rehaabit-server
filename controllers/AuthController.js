@@ -47,7 +47,7 @@ exports.sendOTP = async (req, res) => {
       });
     }
 
-    console.log(process.env.ADMIN_PHONE_NUMBER, process.env.USER_PHONE_NUMBER);
+    // console.log(process.env.ADMIN_PHONE_NUMBER, process.env.USER_PHONE_NUMBER);
 
     // Delete any old OTPs for this number
     await OTP.deleteMany({ contactNumber: formattedPhoneNumber });

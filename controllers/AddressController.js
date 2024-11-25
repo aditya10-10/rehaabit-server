@@ -85,8 +85,8 @@ exports.updateAddress = async (req, res) => {
       _id: addressId,
       user: userId,
     });
-    console.log(addressToUpdate);
-    console.log(status);
+    // console.log(addressToUpdate);
+    // console.log(status);
     if (!addressToUpdate) {
       return res.status(404).json({
         success: false,

@@ -241,7 +241,7 @@ exports.getAllRatingsAndAverage = async (req, res) => {
     // Calculate the average rating
     const averageRating = totalRatings > 0 ? sumOfRatings / totalRatings : 0;
 
-    console.log("Total Ratings:", averageRating);
+    // console.log("Total Ratings:", averageRating);
     // Return the result
     res.json({
       success: true,

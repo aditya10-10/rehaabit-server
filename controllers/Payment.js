@@ -65,7 +65,7 @@ exports.processPayment = async (req, res) => {
       receipt: `receipt_${crypto.randomBytes(10).toString("hex")}`,
     };
 
-    console.log(options);
+    // console.log(options);
 
     const paymentResponse = await instance.orders.create(options);
     if (!paymentResponse) {

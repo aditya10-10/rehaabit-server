@@ -38,7 +38,7 @@ exports.sendEmail = async (req, res) => {
         "Welcome Aboard! Discover Top Home Services with Rehaabit",
         welcomeEmail()
       );
-      console.log("Email sent successfully:", emailResponse.response);
+      // console.log("Email sent successfully:", emailResponse.response);
     } catch (error) {
       // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
       console.error("Error occurred while sending email:", error);
@@ -76,7 +76,7 @@ exports.sendEmailOTP = async (req, res) => {
         "Confirm Your Email Address with This OTP",
         emailOTP(otp)
       );
-      console.log("Email sent successfully:", emailResponse.response);
+      // console.log("Email sent successfully:", emailResponse.response);
     } catch (error) {
       // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
       console.error("Error occurred while sending email:", error);

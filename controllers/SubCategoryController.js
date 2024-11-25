@@ -7,7 +7,8 @@ const { redisClient } = require("../config/redisSetup");
 exports.createSubCategory = async (req, res) => {
   try {
     // Extract the required properties from the request body
-    const { subCategoryName, categoryId, metaTitle, metaDescription } = req.body;
+    const { subCategoryName, categoryId, metaTitle, metaDescription } =
+      req.body;
     const icon = req.files.icon;
 
     // Validate the input
@@ -24,7 +25,7 @@ exports.createSubCategory = async (req, res) => {
       1000,
       1000
     );
-    console.log(image);
+    // console.log(image);
 
     // Create a new SubCategory with the given name
     const newSubCategory = await SubCategory.create({
@@ -136,7 +137,7 @@ exports.updateSubCategoryIcon = async (req, res) => {
       1000
     );
 
-    console.log(image);
+    // console.log(image);
 
     // Update the subcategory icon
     const updatedSubCategory = await SubCategory.findByIdAndUpdate(
@@ -262,13 +263,14 @@ exports.deleteSubCategory = async (req, res) => {
 // Show all categories
 exports.showAllSubCategories = async (req, res) => {
   try {
-    console.log("Fetching all sub-categories");
-    const cachedSubCategories = await redisClient.get("subcategories"); 
+    // console.log("Fetching all sub-categories");
+    const cachedSubCategories = await redisClient.get("subcategories");
     if (cachedSubCategories) {
       try {
-        const parsedSubCategories = typeof cachedSubCategories === 'object' 
-          ? cachedSubCategories 
-          : JSON.parse(cachedSubCategories);
+        const parsedSubCategories =
+          typeof cachedSubCategories === "object"
+            ? cachedSubCategories
+            : JSON.parse(cachedSubCategories);
         return res.status(200).json({
           success: true,
           data: parsedSubCategories,
@@ -296,13 +298,14 @@ exports.showAllSubCategories = async (req, res) => {
 // Show all subcategories
 exports.showAllSubCategories = async (req, res) => {
   try {
-    console.log("Fetching all subcategories");
-    const cachedSubCategories = await redisClient.get("subcategories"); 
+    // console.log("Fetching all subcategories");
+    const cachedSubCategories = await redisClient.get("subcategories");
     if (cachedSubCategories) {
       try {
-        const parsedSubCategories = typeof cachedSubCategories === 'object' 
-          ? cachedSubCategories 
-          : JSON.parse(cachedSubCategories);
+        const parsedSubCategories =
+          typeof cachedSubCategories === "object"
+            ? cachedSubCategories
+            : JSON.parse(cachedSubCategories);
         return res.status(200).json({
           success: true,
           data: parsedSubCategories,
@@ -337,15 +340,18 @@ exports.getSubCategoriesByCategory = async (req, res) => {
     if (!categoryId) {
       return res.status(400).json({
         success: false,
-          message: "Category ID is required",
+        message: "Category ID is required",
       });
     }
-    const cachedSubCategories = await redisClient.get(`subcategories:${categoryId}`); 
+    const cachedSubCategories = await redisClient.get(
+      `subcategories:${categoryId}`
+    );
     if (cachedSubCategories) {
       try {
-        const parsedSubCategories = typeof cachedSubCategories === 'object' 
-          ? cachedSubCategories 
-          : JSON.parse(cachedSubCategories);
+        const parsedSubCategories =
+          typeof cachedSubCategories === "object"
+            ? cachedSubCategories
+            : JSON.parse(cachedSubCategories);
         return res.status(200).json({
           success: true,
           data: parsedSubCategories,
@@ -356,10 +362,13 @@ exports.getSubCategoriesByCategory = async (req, res) => {
       }
     }
     // Find the category and populate its subcategories
-    const category = await Category.findOne({ slugName:categoryId }).populate(
+    const category = await Category.findOne({ slugName: categoryId }).populate(
       "subCategory"
     );
-    await redisClient.set(`subcategories:${categoryId}`, JSON.stringify(category.subCategory));
+    await redisClient.set(
+      `subcategories:${categoryId}`,
+      JSON.stringify(category.subCategory)
+    );
     if (!category) {
       return res.status(404).json({
         success: false,
@@ -367,7 +376,7 @@ exports.getSubCategoriesByCategory = async (req, res) => {
       });
     }
 
-    console.log("Get Subcategories by Category");
+    // console.log("Get Subcategories by Category");
 
     // Return the subcategories of the category
     return res.status(200).json({

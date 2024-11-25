@@ -69,7 +69,7 @@ exports.addPartnerInformation = async (req, res) => {
       1000,
       1000
     );
-    console.log(image);
+    // console.log(image);
 
     // Create a new partner document
     const newPartner = new Partner({

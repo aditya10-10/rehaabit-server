@@ -29,7 +29,7 @@ exports.createInclude = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Include created successfully",
-      service : updatedService,
+      service: updatedService,
     });
   } catch (error) {
     console.error("Error creating Include:", error);
