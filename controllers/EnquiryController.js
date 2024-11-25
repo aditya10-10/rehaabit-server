@@ -1,5 +1,8 @@
 const Enquiry = require("../models/Enquiry");
-const { contactUsEmail } = require("../templates/Contact");
+const {
+  newEnquirySubmissionEmail,
+} = require("../templates/newEnquirySubmissionEmail");
+const { enquiryClosedEmail } = require("../templates/enquiryClosedEmail");
 const mailSender = require("../utils/mailSender");
 const { generateEnquiryId } = require("../utils/generateId");
 
@@ -21,18 +24,21 @@ exports.createEnquiry = async (req, res) => {
   try {
     let { firstName, lastName, email, contactNumber, serviceName, query } =
       req.body;
-    // console.log({ firstName, lastName, email, contactNumber, serviceName, query });
+
+    // Ensure contactNumber is a string
     if (typeof contactNumber === "number") {
       contactNumber = contactNumber.toString();
     }
 
-    // Parse and validate phone number
+    // Validate and format the phone number
     const formattedPhoneNumber = validatePhoneNumber(contactNumber);
 
-    const id = await generateEnquiryId();
+    // Generate a unique enquiry ID
+    const enquiryId = await generateEnquiryId();
 
+    // Create a new Enquiry instance
     const newEnquiry = new Enquiry({
-      enquiryId: id,
+      enquiryId,
       firstName,
       lastName,
       email,
@@ -41,23 +47,26 @@ exports.createEnquiry = async (req, res) => {
       query,
     });
 
-    // Save the enquiry to the database
-    const savedEnquiry = await newEnquiry.save();
-
     // Send a confirmation email
     const emailRes = await mailSender(
       email,
       "Your Enquiry was submitted successfully",
-      contactUsEmail(email, firstName, lastName, contactNumber, query)
+      newEnquirySubmissionEmail(firstName, enquiryId, serviceName)
     );
 
+    // Save the enquiry to the database
+    const savedEnquiry = await newEnquiry.save();
+
+    // Log the email response
     // console.log("Email Response:", emailRes);
 
+    // Respond with success
     res.status(201).json({
       message: "Enquiry submitted successfully",
       data: savedEnquiry,
     });
   } catch (error) {
+    // Handle errors gracefully
     res.status(500).json({ message: "Failed to submit enquiry", error });
   }
 };
@@ -102,12 +111,11 @@ exports.getEnquiryById = async (req, res) => {
 
 // Update an enquiry (status, priority, response, or response log)
 exports.updateEnquiryAndStatusAssignment = async (req, res) => {
-  const { enquiryId, id, newStatus, newPriority, assignedAdmin } = req.body;
+  const { enquiryId, newStatus, newPriority, assignedAdmin } = req.body;
 
-  // console.log({enquiryId,id, newStatus, newPriority, assignedAdmin});
   try {
-    // Find the enquiry by enquiryId
-    const enquiry = await Enquiry.findById(id);
+    // Find the enquiry by custom enquiryId
+    const enquiry = await Enquiry.findOne({ enquiryId });
     if (!enquiry) {
       return res.status(404).json({ message: "Enquiry not found" });
     }
@@ -116,6 +124,11 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
     if (newStatus) {
       enquiry.status = newStatus;
       if (newStatus === "closed") {
+        await mailSender(
+          enquiry.email,
+          "Your Issue has been Resolved ✔️",
+          enquiryClosedEmail(enquiryId, enquiry.serviceName)
+        );
         enquiry.closedAt = Date.now();
       }
     }
@@ -124,24 +137,24 @@ exports.updateEnquiryAndStatusAssignment = async (req, res) => {
 
     // Save the updated enquiry
     await enquiry.save();
-    const populatedEnquiry = await enquiry.populate([
-      {
-        path: "assignedAdmin",
-        model: "User",
-        populate: {
-          path: "additionalDetails",
-          select: "firstName lastName",
-          model: "Profile",
-        },
-      },
-    ]);
 
-    // console.log("populatedEnquiry", populatedEnquiry);
+    // Use the updated populate syntax
+    await enquiry.populate({
+      path: "assignedAdmin",
+      model: "User",
+      populate: {
+        path: "additionalDetails",
+        select: "firstName lastName",
+        model: "Profile",
+      },
+    });
+
     res.status(200).json({
       message: "Enquiry updated successfully",
-      data: populatedEnquiry,
+      data: enquiry,
     });
   } catch (error) {
+    console.error("Error updating enquiry:", error);
     res.status(500).json({ message: "Failed to update enquiry", error });
   }
 };

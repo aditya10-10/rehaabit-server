@@ -33,8 +33,8 @@ async function sendOTP(contactNumber, otp) {
     // Remove the "+91" prefix before sending the OTP
     const formattedContactNumber = formatContactNumber(contactNumber);
 
-    console.log("Sending OTP to: ", formattedContactNumber);
-    console.log("OTP: ", otp);
+    // console.log("Sending OTP to: ", formattedContactNumber);
+    // console.log("OTP: ", otp);
 
     // Fast2SMS API data and headers
     const fast2smsData = {
@@ -54,7 +54,7 @@ async function sendOTP(contactNumber, otp) {
       fast2smsData,
       { headers: fast2smsHeaders }
     );
-    console.log("OTP sent successfully: ", response.data);
+    // console.log("OTP sent successfully: ", response.data);
   } catch (error) {
     console.log("Error occurred while sending OTP: ", error);
     throw error;

@@ -2,6 +2,7 @@ const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const { createSlug } = require("../utils/slugUtils");
+const { redisClient } = require("../config/redisSetup");
 // Create a new category
 exports.createCategory = async (req, res) => {
   try {
@@ -10,7 +11,7 @@ exports.createCategory = async (req, res) => {
     const icon = req.files.icon;
 
     // Handle metaKeywords specifically
-    const metaKeywords = req.body['metaKeywords[]'] || [];
+    const metaKeywords = req.body["metaKeywords[]"] || [];
 
     // Validate input
     if (!name) {
@@ -46,7 +47,7 @@ exports.createCategory = async (req, res) => {
       metaKeywords: Array.isArray(metaKeywords) ? metaKeywords : [metaKeywords],
       subCategory: [],
     });
-
+    await redisClient.del("categories");
     // console.log("Category Created:", CategoryDetails);
     return res.status(201).json({
       success: true,
@@ -65,9 +66,25 @@ exports.createCategory = async (req, res) => {
 // Show all categories
 exports.showAllCategories = async (req, res) => {
   try {
-    console.log("Fetching all categories");
+    // console.log("Fetching all categories");
+    const cachedCategories = await redisClient.get("categories");
+    if (cachedCategories) {
+      try {
+        const parsedCategories =
+          typeof cachedCategories === "object"
+            ? cachedCategories
+            : JSON.parse(cachedCategories);
+        return res.status(200).json({
+          success: true,
+          data: parsedCategories,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached categories:", parseError);
+        await redisClient.del("categories");
+      }
+    }
     const allCategories = await Category.find({});
-
+    await redisClient.set("categories", JSON.stringify(allCategories));
     return res.status(200).json({
       success: true,
       data: allCategories,
@@ -105,7 +122,7 @@ exports.updateCategoryName = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Category not found" });
     }
-
+    await redisClient.del("categories");
     // console.log("Category Name Updated:", category);
     return res.status(200).json({
       success: true,
@@ -156,8 +173,8 @@ exports.updateCategoryIcon = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Category not found" });
     }
-
-    console.log("Category Icon Updated:", category);
+    await redisClient.del("categories");
+    // console.log("Category Icon Updated:", category);
     return res.status(200).json({
       success: true,
       message: "Category icon updated successfully",
@@ -247,12 +264,12 @@ exports.deleteCategory = async (req, res) => {
 
     // Delete the category
     await Category.findByIdAndDelete(categoryId);
-
-    console.log("Category Deleted:", categoryId);
+    await redisClient.del("categories");
+    // console.log("Category Deleted:", categoryId);
     return res.status(200).json({
       success: true,
       message: "Category deleted successfully",
-      categoryId
+      categoryId,
     });
   } catch (error) {
     console.error("Error deleting category:", error);

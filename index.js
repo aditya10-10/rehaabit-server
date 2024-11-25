@@ -23,9 +23,11 @@ const careersRoutes = require("./routes/Careers");
 const ratingAndreviewsRoutes = require("./routes/RatingAndReviews");
 const enquiryRoutes = require("./routes/Enquiry");
 const locationRoutes = require("./routes/Location");
+const blogRoutes = require("./routes/Blog");
 
 // Connect to Cloudinary
 const database = require("./config/database");
+const { connectRedis, redisClient } = require("./config/redisSetup");
 const { cloudinaryConnect } = require("./config/cloudinary");
 
 const app = express();
@@ -33,9 +35,15 @@ const PORT = process.env.PORT || 4000;
 
 // Connect to the database
 database.connect();
+connectRedis();
+// Initialize FirebaseAdmin
 
 // Apply middleware
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "50mb",
+  })
+);
 app.use(cookieParser());
 app.use(morgan("tiny"));
 // CORS
@@ -83,6 +91,7 @@ app.use("/api/v1", ratingAndreviewsRoutes);
 app.use("/api/v1", enquiryRoutes);
 app.use("/api/v1/carrer", careersRoutes);
 app.use("/api/v1", locationRoutes);
+app.use("/api/v1", blogRoutes);
 
 // Default route
 app.get("/", (req, res) => {

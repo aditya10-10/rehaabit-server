@@ -6,6 +6,7 @@ const Exclude = require("../models/Exclude");
 const HowDoesItWorks = require("../models/HowDoesItWorks");
 const SubCategory = require("../models/SubCategory");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const { redisClient } = require("../config/redisSetup");
 
 // CREATE a new Service
 exports.createService = async (req, res) => {
@@ -79,7 +80,8 @@ exports.createService = async (req, res) => {
         path: "service",
       })
       .exec();
-    console.log("updatedSubCategory", updatedSubCategory);
+    await redisClient.del("services");
+    // console.log("updatedSubCategory", updatedSubCategory);
     res.status(201).json({
       success: true,
       message: "Service created successfully",
@@ -158,7 +160,7 @@ exports.editService = async (req, res) => {
         message: "Service not found",
       });
     }
-
+    await redisClient.del("services");
     res.status(200).json({
       success: true,
       message: "Service updated successfully",
@@ -210,7 +212,7 @@ exports.deleteService = async (req, res) => {
     await Exclude.deleteMany({ _id: { $in: service.excludes } });
     await Faq.deleteMany({ _id: { $in: service.faqs } });
     // await RatingAndReview.deleteMany({ _id: { $in: service.ratingAndReviews } });
-
+    await redisClient.del("services");
     return res.status(200).json({
       success: true,
       message: "Service deleted successfully",
@@ -237,7 +239,22 @@ exports.getFullServiceDetails = async (req, res) => {
         message: "Service ID is required",
       });
     }
-
+    const cachedService = await redisClient.get(`services:${serviceId}`);
+    if (cachedService) {
+      try {
+        const parsedService =
+          typeof cachedService === "object"
+            ? cachedService
+            : JSON.parse(cachedService);
+        return res.status(200).json({
+          success: true,
+          data: parsedService,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached service:", parseError);
+        await redisClient.del(`services:${serviceId}`);
+      }
+    }
     const service = await Service.findById(serviceId)
       .populate("howDoesItWorks")
       .populate("includes")
@@ -263,7 +280,7 @@ exports.getFullServiceDetails = async (req, res) => {
         message: "Service not found",
       });
     }
-
+    await redisClient.set(`services:${serviceId}`, JSON.stringify(service));
     res.status(200).json({
       success: true,
       data: service,
@@ -281,7 +298,27 @@ exports.getFullServiceDetails = async (req, res) => {
 // GET all Services
 exports.getAllServices = async (req, res) => {
   try {
-    // Fetch all services from the database
+    const cachedServices = await redisClient.get("services");
+    // console.log("Cached services:", cachedServices);
+
+    if (cachedServices) {
+      try {
+        // Check if the cached data is already an object
+        const parsedServices =
+          typeof cachedServices === "object"
+            ? cachedServices
+            : JSON.parse(cachedServices);
+
+        return res.status(200).json({
+          success: true,
+          data: parsedServices,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached services:", parseError);
+        await redisClient.del("services");
+      }
+    }
+
     const allServices = await Service.find({}).populate([
       {
         path: "howDoesItWorks",
@@ -310,7 +347,12 @@ exports.getAllServices = async (req, res) => {
       },
     ]);
 
-    // Return the fetched services
+    // Convert to plain objects and handle any special types
+    const servicesForCache = allServices.map((doc) => doc.toObject());
+
+    // Store in Redis
+    await redisClient.set("services", JSON.stringify(servicesForCache));
+
     return res.status(200).json({
       success: true,
       data: allServices,
@@ -329,6 +371,13 @@ exports.getAllServices = async (req, res) => {
 exports.getAllPublishedServices = async (req, res) => {
   try {
     // Fetch all published services
+    const cachedPublishedServices = await redisClient.get("publishedServices");
+    if (cachedPublishedServices) {
+      return res.status(200).json({
+        success: true,
+        data: JSON.parse(cachedPublishedServices),
+      });
+    }
     const allServices = await Service.find({ status: "Published" }).populate([
       {
         path: "howDoesItWorks",
@@ -346,7 +395,7 @@ exports.getAllPublishedServices = async (req, res) => {
         path: "ratingAndReviews",
       },
     ]);
-
+    await redisClient.set("publishedServices", JSON.stringify(allServices));
     // Return the fetched services
     return res.status(200).json({
       success: true,
@@ -366,6 +415,15 @@ exports.getAllPublishedServices = async (req, res) => {
 exports.getAllNoPricedPublishedServices = async (req, res) => {
   try {
     // Fetch all published services without pricing
+    const cachedNoPricedPublishedServices = await redisClient.get(
+      "noPricedPublishedServices"
+    );
+    if (cachedNoPricedPublishedServices) {
+      return res.status(200).json({
+        success: true,
+        data: JSON.parse(cachedNoPricedPublishedServices),
+      });
+    }
     const allServices = await Service.find({
       status: "Published",
       price: 0,
@@ -386,7 +444,10 @@ exports.getAllNoPricedPublishedServices = async (req, res) => {
         path: "ratingAndReviews",
       },
     ]);
-
+    await redisClient.set(
+      "noPricedPublishedServices",
+      JSON.stringify(allServices)
+    );
     // Return the fetched services
     return res.status(200).json({
       success: true,
@@ -406,8 +467,20 @@ exports.getAllNoPricedPublishedServices = async (req, res) => {
 exports.getTotalServicesCount = async (req, res) => {
   try {
     // Get the total count of services
+    const cachedTotalServicesCount = await redisClient.get(
+      "totalServicesCount"
+    );
+    if (cachedTotalServicesCount) {
+      return res.status(200).json({
+        success: true,
+        totalServices: JSON.parse(cachedTotalServicesCount),
+      });
+    }
     const totalServicesCount = await Service.countDocuments();
-
+    await redisClient.set(
+      "totalServicesCount",
+      JSON.stringify(totalServicesCount)
+    );
     // Return the total count
     return res.status(200).json({
       success: true,
@@ -434,11 +507,11 @@ exports.getServiceRatingAndReviews = async (req, res) => {
         select: "firstName lastName",
         model: "User",
         populate: {
-            path: "additionalDetails",
-            select: "firstName lastName",
-            model: "Profile",
-          },
+          path: "additionalDetails",
+          select: "firstName lastName",
+          model: "Profile",
         },
+      },
     });
 
     if (!service) {
@@ -450,9 +523,15 @@ exports.getServiceRatingAndReviews = async (req, res) => {
     const ratingAndReviews = service.ratingAndReviews;
     const itemsPerPage = 5;
     const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, ratingAndReviews.length);
-    const paginatedRatingAndReviews = ratingAndReviews.slice(startIndex, endIndex);
-    console.log(paginatedRatingAndReviews);
+    const endIndex = Math.min(
+      startIndex + itemsPerPage,
+      ratingAndReviews.length
+    );
+    const paginatedRatingAndReviews = ratingAndReviews.slice(
+      startIndex,
+      endIndex
+    );
+    // console.log(paginatedRatingAndReviews);
     return res.status(200).json({
       success: true,
       data: paginatedRatingAndReviews,

@@ -22,7 +22,7 @@ exports.auth = async (req, res, next) => {
     try {
       // Verifying the JWT using the secret key stored in environment variables
       const decode = await jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decode);
+      // console.log(decode);
       // Storing the decoded JWT payload in the request object for further use
       req.user = decode;
     } catch (error) {
@@ -85,14 +85,36 @@ exports.isPartner = async (req, res, next) => {
     const userDetails = await User.findOne({
       contactNumber: req.user.contactNumber,
     });
-    console.log(userDetails);
+    // console.log(userDetails);
 
-    console.log(userDetails.accountType);
+    // console.log(userDetails.accountType);
 
     if (userDetails.accountType !== "Partner") {
       return res.status(401).json({
         success: false,
         message: "This is a Protected Route for Partner",
+      });
+    }
+    next();
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: `User Role Can't be Verified` });
+  }
+};
+exports.isContentWriter = async (req, res, next) => {
+  try {
+    const userDetails = await User.findOne({
+      contactNumber: req.user.contactNumber,
+    });
+
+    if (
+      userDetails.accountType !== "Content Writer" &&
+      userDetails.accountType !== "Admin"
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "This is a Protected Route for Content Writer",
       });
     }
     next();
