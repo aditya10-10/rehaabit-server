@@ -58,7 +58,7 @@ exports.createEnquiry = async (req, res) => {
     const savedEnquiry = await newEnquiry.save();
 
     // Log the email response
-    console.log("Email Response:", emailRes);
+    // console.log("Email Response:", emailRes);
 
     // Respond with success
     res.status(201).json({
