@@ -34,6 +34,7 @@ const {
   deleteSubCategory,
   showAllSubCategories,
   getSubCategoriesByCategory,
+  getSubCategoriesBySlug,
 } = require("../controllers/SubCategoryController");
 
 // Include Controllers Import
@@ -107,6 +108,7 @@ router.delete("/deleteSubCategory", auth, isAdmin, deleteSubCategory);
 // show all subcategories
 router.get("/showAllSubCategories", showAllSubCategories);
 router.post("/getSubCategoriesByCategory", getSubCategoriesByCategory);
+router.get("/getSubCategoriesBySlug/slug/:slug", getSubCategoriesBySlug);
 
 // ********************************************************************************************************
 //                                      Service routes
@@ -121,7 +123,7 @@ router.delete("/deleteService", auth, isAdmin, deleteService);
 router.post("/getFullServiceDetails", getFullServiceDetails);
 
 router.get("/getServiceRatingAndReviews", getServiceRatingAndReviews);
-  
+
 router.get("/getAllServices", getAllServices);
 
 router.get("/getAllPublishedServices", getAllPublishedServices);
@@ -165,7 +167,6 @@ router.delete("/deleteHowDoesItWorks", auth, isAdmin, deleteHowDoesItWorks);
 //   updateHowDoesItWorksIcon
 // );
 router.get("/getHowDoesItWorks", getHowDoesItWorks);
-
 
 // ********************************************************************************************************
 //                                      Rating and Review
