@@ -24,7 +24,7 @@ const ratingAndreviewsRoutes = require("./routes/RatingAndReviews");
 const enquiryRoutes = require("./routes/Enquiry");
 const locationRoutes = require("./routes/Location");
 const blogRoutes = require("./routes/Blog");
-
+const generateSitemap = require("./utils/sitemap");
 // Connect to Cloudinary
 const database = require("./config/database");
 const { connectRedis, redisClient } = require("./config/redisSetup");
@@ -99,6 +99,17 @@ app.get("/", (req, res) => {
     success: true,
     message: "Welcome to Rehaabit!",
   });
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const sitemap = await generateSitemap();
+    res.header("Content-Type", "application/xml");
+    res.send(sitemap);
+  } catch (error) {
+    console.error("Error serving sitemap:", error);
+    res.status(500).send("Failed to generate sitemap.");
+  }
 });
 
 // Start the server
