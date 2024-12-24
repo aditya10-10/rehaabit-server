@@ -11,8 +11,6 @@ const getBlogUrls = async () => {
   try {
     // Reference the blogs collection
     const blogsSnapshot = await db.collection("blogs").get();
-
-    // Extract URLs
     const blogUrls = [];
     blogsSnapshot.forEach((doc) => {
       const data = doc.data();
@@ -21,8 +19,6 @@ const getBlogUrls = async () => {
         blogUrls.push(`/library/${data.slug}`);
       }
     });
-
-    // console.log("Fetched blog URLs:", blogUrls);
     return blogUrls;
   } catch (error) {
     console.error("Error fetching blogs:", error.message);
@@ -30,57 +26,29 @@ const getBlogUrls = async () => {
   }
 };
 
-// Example usage
-getBlogUrls()
-  //   .then((urls) => console.log("Blog URLs:", urls))
-  .catch((err) => console.error(err));
-
-/**
- * Generate a sitemap dynamically from the database.
- * Includes blog and category URLs.
- * @returns {string} - XML string of the sitemap
- */
+// Fetch data for the sitemap
 const generateSitemap = async () => {
   try {
-    // console.log("Generating sitemap...");
-
-    // Fetch blogs from Firestore
     const firestoreBlogs = await getBlogUrls();
-
-    // Fetch blogs and categories from MongoDB
     const blogs = await Blog.find({ status: "published" }, { slug: 1 }).lean();
     const categories = await Category.find({}, { slugName: 1 }).lean();
 
     if (!blogs.length && !categories.length && !firestoreBlogs.length) {
-      throw new Error("No blogs, Firestore blogs, or categories found");
+      throw new Error("No blogs or categories found");
     }
 
-    // console.log(
-    //   "Generating sitemap with",
-    //   blogs.length,
-    //   "blogs,",
-    //   categories.length,
-    //   "categories, and",
-    //   firestoreBlogs.length,
-    //   "Firestore blogs"
-    // );
-
-    // Prepare URLs for the sitemap
     const urls = [
       { url: "/", changefreq: "daily", priority: 1.0 },
-      // Map MongoDB blogs to include the `/library/` prefix
       ...blogs.map(({ slug }) => ({
         url: `/library/${slug}`,
         changefreq: "monthly",
         priority: 0.8,
       })),
-      // Map Firestore blogs
       ...firestoreBlogs.map((url) => ({
         url,
         changefreq: "weekly",
         priority: 0.8,
       })),
-      // Map categories with their slugs
       ...categories.map(({ slugName }) => ({
         url: `/${slugName}`,
         changefreq: "weekly",
@@ -88,14 +56,44 @@ const generateSitemap = async () => {
       })),
     ];
 
-    // Generate sitemap
     const stream = new SitemapStream({ hostname: "https://www.rehaabit.com" });
     const sitemap = await streamToPromise(Readable.from(urls).pipe(stream));
     return sitemap.toString();
   } catch (error) {
-    console.error("Error in generateSitemap:", error.message);
+    console.error("Error generating sitemap:", error.message);
     throw error;
   }
 };
+
+// Listen for changes in MongoDB collections
+Blog.watch().on("change", async (change) => {
+  console.log("Blog collection changed:", change);
+  try {
+    await generateSitemap();
+  } catch (err) {
+    console.error("Error regenerating sitemap:", err.message);
+  }
+});
+
+Category.watch().on("change", async (change) => {
+  console.log("Category collection changed:", change);
+  try {
+    await generateSitemap();
+  } catch (err) {
+    console.error("Error regenerating sitemap:", err.message);
+  }
+});
+
+// Optional: Listen for changes in Firestore collection
+blogsCollection.onSnapshot((snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    console.log("Firestore blog changed:", change);
+    try {
+      generateSitemap();
+    } catch (err) {
+      console.error("Error regenerating sitemap:", err.message);
+    }
+  });
+});
 
 module.exports = generateSitemap;
