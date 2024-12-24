@@ -37,8 +37,29 @@ const generateSitemap = async () => {
       throw new Error("No blogs or categories found");
     }
 
+    // Static URLs
+    const staticUrls = [
+      { url: "/all-services", changefreq: "monthly", priority: 0.8 },
+      { url: "/cart", changefreq: "monthly", priority: 0.8 },
+      { url: "/checkout", changefreq: "monthly", priority: 0.8 },
+      { url: "/library", changefreq: "weekly", priority: 0.8 },
+      { url: "/terms-and-conditions", changefreq: "monthly", priority: 0.8 },
+      { url: "/privacy-policy", changefreq: "monthly", priority: 0.8 },
+      {
+        url: "/cancellation-and-refund-policy",
+        changefreq: "monthly",
+        priority: 0.8,
+      },
+      { url: "/contact-us", changefreq: "monthly", priority: 0.8 },
+      { url: "/about-us", changefreq: "monthly", priority: 0.8 },
+      { url: "/help", changefreq: "monthly", priority: 0.8 },
+      { url: "/careers", changefreq: "monthly", priority: 0.8 },
+      { url: "/partner", changefreq: "monthly", priority: 0.8 },
+    ];
+
     const urls = [
       { url: "/", changefreq: "daily", priority: 1.0 },
+      ...staticUrls, // Add static URLs
       ...blogs.map(({ slug }) => ({
         url: `/library/${slug}`,
         changefreq: "monthly",
@@ -67,7 +88,7 @@ const generateSitemap = async () => {
 
 // Listen for changes in MongoDB collections
 Blog.watch().on("change", async (change) => {
-  console.log("Blog collection changed:", change);
+  //   console.log("Blog collection changed:", change);
   try {
     await generateSitemap();
   } catch (err) {
@@ -76,7 +97,7 @@ Blog.watch().on("change", async (change) => {
 });
 
 Category.watch().on("change", async (change) => {
-  console.log("Category collection changed:", change);
+  //   console.log("Category collection changed:", change);
   try {
     await generateSitemap();
   } catch (err) {
@@ -87,7 +108,7 @@ Category.watch().on("change", async (change) => {
 // Optional: Listen for changes in Firestore collection
 blogsCollection.onSnapshot((snapshot) => {
   snapshot.docChanges().forEach((change) => {
-    console.log("Firestore blog changed:", change);
+    // console.log("Firestore blog changed:", change);
     try {
       generateSitemap();
     } catch (err) {
