@@ -391,3 +391,67 @@ exports.getSubCategoriesByCategory = async (req, res) => {
     });
   }
 };
+
+exports.getSubCategoriesBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    // console.log(slug);
+
+    // Validate input
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Slug is required",
+      });
+    }
+
+    // Check for cached data in Redis
+    const cachedSubCategories = await redisClient.get(`subcategories:${slug}`);
+    if (cachedSubCategories) {
+      try {
+        // Check if the cached value is already an object
+        const parsedSubCategories =
+          typeof cachedSubCategories === "object"
+            ? cachedSubCategories
+            : JSON.parse(cachedSubCategories);
+        return res.status(200).json({
+          success: true,
+          data: parsedSubCategories,
+        });
+      } catch (parseError) {
+        console.error("Error parsing cached sub-categories:", parseError);
+        await redisClient.del(`subcategories:${slug}`);
+      }
+    }
+
+    // Find the category by slug and populate its subcategories
+    const category = await Category.findOne({ slugName: slug }).populate(
+      "subCategory"
+    );
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    // Cache the subcategories in Redis
+    await redisClient.set(
+      `subcategories:${slug}`,
+      JSON.stringify(category.subCategory)
+    );
+
+    // Return the subcategories of the category
+    return res.status(200).json({
+      success: true,
+      data: category.subCategory,
+    });
+  } catch (error) {
+    console.error("Error fetching subcategories by slug:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
