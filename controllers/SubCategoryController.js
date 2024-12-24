@@ -395,7 +395,7 @@ exports.getSubCategoriesByCategory = async (req, res) => {
 exports.getSubCategoriesBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    console.log(slug);
+    // console.log(slug);
 
     // Validate input
     if (!slug) {

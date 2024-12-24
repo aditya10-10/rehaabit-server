@@ -5,6 +5,7 @@ const Order = require("../models/Order");
 const OrderStatus = require("../models/OrderStatus");
 const Service = require("../models/Service");
 const Cart = require("../models/Cart");
+const path = require("path");
 
 exports.placeOrder = async (req, res) => {
   try {
@@ -296,9 +297,17 @@ exports.getUserOrders = async (req, res) => {
         {
           path: "status",
         },
+        {
+          path: "address",
+        },
+        {
+          path: "user",
+        },
       ],
       options: { sort: { createdAt: -1 } }, // Sort orders by createdAt in descending order
     });
+
+    // console.log(populatedUser);
 
     if (!populatedUser) {
       return res.status(404).json({
@@ -350,6 +359,7 @@ exports.getAllOrders = async (req, res) => {
       .populate("user")
       .sort({ createdAt: -1 }); // Sort orders by createdAt in descending order
 
+    // console.log(orders);
     if (!orders || orders.length === 0) {
       return res.status(404).json({
         success: false,
